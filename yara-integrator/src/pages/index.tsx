@@ -20,7 +20,7 @@ export default function Home() {
     <>
       <Navbar />
       <main className={styles.main + " bg-bg"}>
-        <div className="flex flex-col justify-between w-3/12 min-w-[350px] min-h-[450px]">
+        <div className="flex flex-col justify-between w-3/12 min-w-[350px] min-h-[425px]">
           <div className="flex flex-col items-center w-full">
             {apk && <span className="text-black mb-2">{apk.name}</span>}
             <Image

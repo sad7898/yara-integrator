@@ -10,7 +10,8 @@ export const useUploadForm = (url: string) => {
     const formData = new FormData();
     formData.append("file", apk ?? "");
     const result = await uploadForm(formData);
-    alert(`${result.status}:${result.data}`);
+    console.log(result.data);
+    alert(`${result.status}:${JSON.stringify(result.data)}`);
   };
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     if (progress > 0) setProgress(0);
