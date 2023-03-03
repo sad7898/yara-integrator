@@ -22,7 +22,6 @@ def hello():
 @app.route('/scan',methods=['POST'])
 def scan_apk():
     if request.method == 'POST':
-        print(request.files)
         if 'file' not in request.files:
             abort(400,description="File not found")
         file = request.files['file']
