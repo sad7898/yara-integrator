@@ -27,11 +27,17 @@ def scan_apk():
         file = request.files['file']
         if file.filename == "" or not fileUtils.is_file_allowed(file.filename):
             abort(400,description="invalid file format")            
-        return yara_scanner.scan(file.stream)
+        return yara_scanner.scan(file.filename,file.stream)
         
-            
-    
-
+@app.route('/yara',methods=["POST"])
+def addRule():
+    if request.method == 'POST':
+        if 'file' not in request.files:
+            abort(400,description="File not found")
+        file = request.files['file']
+        if file.filename == "":
+            abort(400,description="invalid file format")            
+        return str(yara_scanner.addRule(file.filename,file.stream))
 
 
 
