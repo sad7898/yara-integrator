@@ -1,16 +1,19 @@
 from io import StringIO
 import json
-from flask import Flask, abort, jsonify, request
+import sqlite3
+from flask import Flask, abort, jsonify, request,g
 from werkzeug.utils import secure_filename
 from werkzeug.datastructures import FileStorage
 from flask_cors import CORS
 import os
 from utils import file as fileUtils
-from utils import yara_scanner
-
+from services import scanner
+     
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = '/app/apk'
 CORS(app)
+
+
 
 @app.errorhandler(400)
 def bad_request(e):
@@ -27,7 +30,7 @@ def scan_apk():
         file = request.files['file']
         if file.filename == "" or not fileUtils.is_file_allowed(file.filename):
             abort(400,description="invalid file format")            
-        return yara_scanner.scan(file.filename,file.stream)
+        return scanner.scan(file.filename,file.stream)
         
 @app.route('/yara',methods=["POST"])
 def addRule():
@@ -37,7 +40,7 @@ def addRule():
         file = request.files['file']
         if file.filename == "":
             abort(400,description="invalid file format")            
-        return str(yara_scanner.addRule(file.filename,file.stream))
+        return str(scanner.addRule(file.filename,file.stream))
 
 
 

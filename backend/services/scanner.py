@@ -4,16 +4,14 @@ from typing import IO
 import yara
 import uuid
 from utils import dex2jar
+from repository import rule
+ruleRepository = rule.Repository()
 
-RULE_DIRECTORY = "rules"
-def getRules():
-    ruleFiles = os.listdir(os.path.join(f"{RULE_DIRECTORY}"))
-    return {filename.split(".")[0]:os.path.join(f"{RULE_DIRECTORY}/{filename}") for filename in ruleFiles}
 
 
 def scan(filename:str,stream:IO):
     dirPath,decompiledApkPath = dex2jar.decompileApk(filename,stream)
-    ruleMap = getRules()
+    ruleMap = ruleRepository.list()
     rules = yara.compile(filepaths=ruleMap)
     if decompiledApkPath is None or dirPath is None:
         matches = rules.match(data=stream.read())
@@ -30,13 +28,12 @@ def scan(filename:str,stream:IO):
     return result
 
 def addRule(name: str,stream: IO) -> bool:
-    # check if file name already exists!
-    fullPath = os.path.join("rules",name)
-    file = open(fullPath,"wb")
-    lines = stream.readlines()
-    for line in lines:
-        file.write(line)
-    return True
+    try:
+        yara.compile(source=stream.read())
+    except yara.SyntaxError:
+        return False
+    return ruleRepository.insert(name,stream)
+
         
     
 

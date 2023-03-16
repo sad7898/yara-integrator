@@ -6,7 +6,7 @@ from typing import IO
 import uuid
 import shutil
 
-
+TEMP_APK_PATH = "tempApk"
 
 def getCmdStr() -> str:
     if sys.platform == 'win32':
@@ -16,7 +16,7 @@ def getCmdStr() -> str:
 
 def saveApkToTemp(filename:str,stream:IO):
     id = uuid.uuid4().hex
-    dirPath = os.path.join("tempApk",id)
+    dirPath = os.path.join(TEMP_APK_PATH,id)
     os.mkdir(dirPath)
     path = os.path.join(dirPath,filename)
     tempApk = open(path,"wb")
@@ -27,9 +27,9 @@ def saveApkToTemp(filename:str,stream:IO):
 
 def decompileApk(filename:str,apk: IO) -> str:
     dirId,filename = saveApkToTemp(filename,apk)
-    resultFilePath = os.path.join("tempApk",dirId,f"{filename}-decompiled")
+    resultFilePath = os.path.join(TEMP_APK_PATH,dirId,f"{filename}-decompiled")
     cmd = getCmdStr()
-    process = subprocess.run(args=[cmd,"-f",os.path.join("tempApk",dirId,filename),"-o",resultFilePath],capture_output=True)
+    process = subprocess.run(args=[cmd,"-f",os.path.join(TEMP_APK_PATH,dirId,filename),"-o",resultFilePath],capture_output=True)
     if process.stderr is not None:
         return dirId,None
     else:
@@ -38,4 +38,4 @@ def decompileApk(filename:str,apk: IO) -> str:
 
 
 def cleanTempDir(dirId: str):
-    shutil.rmtree(os.path.join("tempApk",dirId))
+    shutil.rmtree(os.path.join(TEMP_APK_PATH,dirId))
