@@ -10,11 +10,13 @@ import { UploadButton } from "@/components/uploadButton";
 import { ProgressBar } from "@/components/progressBar";
 import fileIcon from "../assets/file.png";
 import zipIcon from "../assets/zip-folder.png";
+import { useRouter } from "next/router";
 const inter = Inter({ subsets: ["latin"] });
 
 export default function Home() {
-  const { onSubmit, isSuccess, progress, handleFileChange, apk } =
-    useUploadForm();
+  const router = useRouter();
+  const { onSubmit, isSuccess, progress, handleFileChange, file } =
+    useUploadForm("/scan");
 
   return (
     <main
@@ -24,9 +26,9 @@ export default function Home() {
     >
       <div className="flex flex-col justify-between w-3/12 min-w-[350px] min-h-[425px]">
         <div className="flex flex-col items-center w-full">
-          {apk && <span className="text-black mb-2">{apk.name}</span>}
+          {file && <span className="text-black mb-2">{file.name}</span>}
           <Image
-            src={apk ? zipIcon : fileIcon}
+            src={file ? zipIcon : fileIcon}
             width={200}
             height={300}
             alt={""}
@@ -38,10 +40,12 @@ export default function Home() {
             <UploadButton onFileChange={handleFileChange}>
               Upload File
             </UploadButton>
-            <Button>Import YARA</Button>
+            <Button onClick={() => router.push("/rules/create")}>
+              Import YARA
+            </Button>
           </div>
           <div className="w-full">
-            <Button onClick={onSubmit} disabled={!apk}>
+            <Button onClick={onSubmit} disabled={!file}>
               SCAN
             </Button>
           </div>

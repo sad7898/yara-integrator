@@ -4,13 +4,20 @@ import { Button } from "./button";
 export interface UploadFormProps {
   onFileChange: (event: ChangeEvent<HTMLInputElement>) => void;
   children?: React.ReactNode;
+  className?: string;
 }
 
-export const UploadButton = ({ onFileChange, children }: UploadFormProps) => {
+export const UploadButton = ({
+  onFileChange,
+  children,
+  className,
+}: UploadFormProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
   return (
     <>
-      <Button onClick={() => inputRef.current?.click()}>{children}</Button>
+      <Button className={className} onClick={() => inputRef.current?.click()}>
+        {children}
+      </Button>
       <input
         ref={inputRef}
         className="opacity-0 absolute"

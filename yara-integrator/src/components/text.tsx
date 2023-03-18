@@ -9,8 +9,11 @@ interface AnchorProps {
 
 export const Anchor = ({ children, className, link }: AnchorProps) => {
   return (
-    <Link href={link}>
-      <span className={className}>{children}</span>
+    <Link
+      href={link}
+      className={`flex items-center px-1 duration-200 hover:bg-secondary ${className}`}
+    >
+      {children}
     </Link>
   );
 };

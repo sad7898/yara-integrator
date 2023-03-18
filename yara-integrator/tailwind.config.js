@@ -10,6 +10,7 @@ module.exports = {
         battleshipGray: "#828E82",
         sage: "#AAAE8E",
         bg: "#E0E0E0",
+        correctGreen: "#23A347",
       },
     },
   },

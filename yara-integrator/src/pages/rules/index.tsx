@@ -4,10 +4,12 @@ import { Button } from "@/components/button";
 import { client } from "@/utils/axiosInstance";
 import { Table } from "@/components/table/table";
 import { RuleRow, Rule } from "@/components/ruleRow";
+import { useRouter } from "next/router";
 
 export default function Rules() {
   const [rules, setRules] = useState<Rule[]>([]);
   const [selectedRules, setSelectedRules] = useState<Rule[]>([]);
+  const router = useRouter();
   const fetchRules = useCallback(async () => {
     const { data } = await client.get("/yara");
     setRules(data.data);
@@ -30,7 +32,7 @@ export default function Rules() {
           <h1 className="text-black text-5xl">YARA Rules</h1>
           <div className="flex flex-row gap-4 h-10">
             <Button>Delete</Button>
-            <Button>New</Button>
+            <Button onClick={() => router.push("/rules/create")}>New</Button>
           </div>
         </div>
         <Table headers={["Name", "", ""]}>

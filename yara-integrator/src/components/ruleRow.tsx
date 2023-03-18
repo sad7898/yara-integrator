@@ -1,3 +1,4 @@
+import { useRouter } from "next/router";
 import React, { useState } from "react";
 import { Button } from "./button";
 
@@ -27,6 +28,7 @@ const Tickbox = ({
   );
 };
 export const RuleRow = ({ name, path, onSelectRow }: RuleRowProps) => {
+  const router = useRouter();
   const [isSelected, setSelected] = useState(false);
   const onClick = () => {
     onSelectRow();
@@ -40,7 +42,9 @@ export const RuleRow = ({ name, path, onSelectRow }: RuleRowProps) => {
       </div>
       <div className="p-2 bg-white col-span-1 flex flex-row justify-end border-b">
         <div className="w-full max-w-[5rem]">
-          <Button>Edit</Button>
+          <Button onClick={() => router.push(`/rules/edit/${name}`)}>
+            Edit
+          </Button>
         </div>
       </div>
     </>
