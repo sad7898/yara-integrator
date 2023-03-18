@@ -23,7 +23,7 @@ export const Button = ({
       onClick={onClick}
       className={`${
         disabled ? colorVariants["disabled"] : colorVariants[variant]
-      } py-2 px-2 rounded-md w-full`}
+      } py-2 px-2 rounded-md w-full h-auto`}
       disabled={disabled}
     >
       {children}

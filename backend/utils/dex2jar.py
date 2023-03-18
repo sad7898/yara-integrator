@@ -5,6 +5,7 @@ import subprocess
 from typing import IO
 import uuid
 import shutil
+from utils import file as fileUtil
 
 TEMP_APK_PATH = "tempApk"
 
@@ -26,6 +27,8 @@ def saveApkToTemp(filename:str,stream:IO):
     return id,filename
 
 def decompileApk(filename:str,apk: IO) -> str:
+    if (fileUtil.get_file_extension(filename) != "apk"):
+        return None,None
     dirId,filename = saveApkToTemp(filename,apk)
     resultFilePath = os.path.join(TEMP_APK_PATH,dirId,f"{filename}-decompiled")
     cmd = getCmdStr()

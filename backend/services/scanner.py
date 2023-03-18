@@ -18,6 +18,7 @@ def scan(filename:str,stream:IO):
     else:
         matches = rules.match(filepath=decompiledApkPath)
     result = {}
+    print(matches)
     for match in matches:   
         if match.namespace in result:
             result[match.namespace].append(match.rule)
@@ -33,6 +34,18 @@ def addRule(name: str,stream: IO) -> bool:
     except yara.SyntaxError:
         return False
     return ruleRepository.insert(name,stream)
+
+def getRules():
+   ruleMap = ruleRepository.list()
+   return [{"name": rule,"path":ruleMap[rule]} for rule in ruleMap]
+def searchRuleByFilename(name: str):
+    file = ruleRepository.searchByName(name)
+    if (file is not None):
+        return {
+            "name": name,
+            "content": file.read()
+        }
+    return None
 
         
     

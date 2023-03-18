@@ -6,10 +6,12 @@ export const Navbar = () => {
     <nav className="fixed bg-primary w-full px-2 py-3">
       <div className="flex flex-row">
         <div className="mx-8">
-          <span className="text-3xl font-semibold text-white">Scandina</span>
+          <Anchor link="/" className="text-3xl font-semibold text-white">
+            Scandina
+          </Anchor>
         </div>
         <div className="flex space-x-12 items-center">
-          <Anchor link="/">Manage YARA</Anchor>
+          <Anchor link="/rules">Manage YARA</Anchor>
           <Anchor link="/">Contact</Anchor>
         </div>
       </div>

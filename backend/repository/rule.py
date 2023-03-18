@@ -3,11 +3,8 @@ import os
 import sqlite3
 from typing import IO
 import datetime
-from app import get_db
 RULE_DIRECTORY = "rules"
 class Repository:
-    def __init__(self):
-        self.conn = get_db()
 
     def insert(self,name:str,stream: IO):
         fullPath = os.path.join("rules",name)

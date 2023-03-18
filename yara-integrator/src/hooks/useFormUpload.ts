@@ -1,8 +1,9 @@
+import { client } from "@/utils/axiosInstance";
 import axios from "axios";
 import * as React from "react";
 import { useState, useEffect, ChangeEvent } from "react";
 
-export const useUploadForm = (url: string) => {
+export const useUploadForm = () => {
   const [isSuccess, setIsSuccess] = useState(false);
   const [progress, setProgress] = useState(0);
   const [apk, setApk] = useState<File>();
@@ -10,7 +11,6 @@ export const useUploadForm = (url: string) => {
     const formData = new FormData();
     formData.append("file", apk ?? "");
     const result = await uploadForm(formData);
-    console.log(result.data);
     alert(`${result.status}:${JSON.stringify(result.data)}`);
   };
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -21,7 +21,7 @@ export const useUploadForm = (url: string) => {
   };
   const uploadForm = async (formData: FormData) => {
     setProgress(0);
-    const result = await axios.post(url, formData, {
+    const result = await client.post("/scan", formData, {
       headers: {
         "Content-Type": "multipart/form-data",
       },

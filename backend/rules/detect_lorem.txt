@@ -1,0 +1,9 @@
+rule Lorem
+{
+    strings:
+        $title = "lorem"
+        $subtitle = "ipsum"
+
+    condition:
+        $title or $subtitle
+}

@@ -40,8 +40,17 @@ def addRule():
         file = request.files['file']
         if file.filename == "":
             abort(400,description="invalid file format")            
-        return str(scanner.addRule(file.filename,file.stream))
+        return {"success": scanner.addRule(file.filename,file.stream)}
 
+@app.route("/yara",methods=['GET'])
+def getRules():
+     if request.method == 'GET':
+          return {"data":scanner.getRules()}
+
+@app.route("/yara/<filename>",methods=['GET'])
+def searchRule(filename:str):
+     if request.method == 'GET':
+          return {"data":scanner.searchRuleByFilename(filename)}
 
 
 
