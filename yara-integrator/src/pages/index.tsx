@@ -15,7 +15,7 @@ const inter = Inter({ subsets: ["latin"] });
 
 export default function Home() {
   const router = useRouter();
-  const { onSubmit, isSuccess, progress, handleFileChange, file } =
+  const { onSubmit, error, progress, handleFileChange, file } =
     useUploadForm("/scan");
 
   return (
@@ -50,6 +50,7 @@ export default function Home() {
             </Button>
           </div>
         </div>
+        {error && <div className="text-red-500">{error}</div>}
       </div>
     </main>
   );

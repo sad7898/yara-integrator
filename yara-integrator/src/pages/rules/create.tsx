@@ -5,9 +5,10 @@ import { Button } from "@/components/button";
 import { useUploadForm } from "@/hooks/useFormUpload";
 import { UploadButton } from "@/components/uploadButton";
 import { Cross } from "@/components/redCross";
+import { ProgressBar } from "@/components/progressBar";
 
 const CreateRule = () => {
-  const { onSubmit, isSuccess, progress, handleFileChange, file, removeFile } =
+  const { onSubmit, error, progress, handleFileChange, file, removeFile } =
     useUploadForm("/yara");
   const [filename, setFilename] = useState("");
   const onFileNameChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -51,8 +52,11 @@ const CreateRule = () => {
           )}
         </div>
         <div>
-          <Button className="max-w-[172px]">Submit</Button>
+          <Button className="max-w-[172px]" onClick={onSubmit}>
+            Submit
+          </Button>
         </div>
+        {error && <div className="text-red-500">{error}</div>}
       </Block>
     </main>
   );
