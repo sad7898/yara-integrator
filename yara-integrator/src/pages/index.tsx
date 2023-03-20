@@ -45,7 +45,7 @@ export default function Home() {
             </Button>
           </div>
           <div className="w-full">
-            <Button onClick={onSubmit} disabled={!file}>
+            <Button onClick={() => onSubmit()} disabled={!file}>
               SCAN
             </Button>
           </div>

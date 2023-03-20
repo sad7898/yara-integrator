@@ -6,10 +6,12 @@ import { useUploadForm } from "@/hooks/useFormUpload";
 import { UploadButton } from "@/components/uploadButton";
 import { Cross } from "@/components/redCross";
 import { ProgressBar } from "@/components/progressBar";
+import { useRouter } from "next/router";
 
 const CreateRule = () => {
+  const router = useRouter();
   const { onSubmit, error, progress, handleFileChange, file, removeFile } =
-    useUploadForm("/yara");
+    useUploadForm("/yara", () => router.push("/rules"));
   const [filename, setFilename] = useState("");
   const onFileNameChange = (e: ChangeEvent<HTMLInputElement>) => {
     setFilename(e.target.value);
@@ -52,7 +54,7 @@ const CreateRule = () => {
           )}
         </div>
         <div>
-          <Button className="max-w-[172px]" onClick={onSubmit}>
+          <Button className="max-w-[172px]" onClick={() => onSubmit(filename)}>
             Submit
           </Button>
         </div>

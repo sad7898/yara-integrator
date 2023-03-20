@@ -16,12 +16,12 @@ class Repository:
 
     def list(self):
         ruleFiles = os.listdir(os.path.join(RULE_DIRECTORY))
-        return {filename.split(".")[0]:os.path.join(f"{RULE_DIRECTORY}/{filename}") for filename in ruleFiles}
+        return {filename:self.getFullPath(filename) for filename in ruleFiles}
     
     def searchByName(self,name="") -> IO | None:
         for _, _, files in os.walk(RULE_DIRECTORY):
             for file in files:
-                if file.split(".")[0] == name:
+                if file == name:
                     return open(os.path.join(f"{RULE_DIRECTORY}/{file}"),"r")
         return None
     
@@ -32,10 +32,20 @@ class Repository:
                 print(f"File {name} found and removed at {root}")
                 return True
         return False
-
-    def update(self, name:str,stream: IO) -> bool:
-        file = open(os.path.join(f"{RULE_DIRECTORY}/{name}"),"wb")
-        lines = stream.readlines()
+    
+    def getFullPath(self,filename:str) -> str:
+        return os.path.join(f"{RULE_DIRECTORY}/{filename}")
+    
+    def update(self, currentName:str,payload) -> bool:
+        latestName = currentName
+        if (currentName != payload['name']):
+            try:
+                os.rename(self.getFullPath(currentName), self.getFullPath(payload['name']))
+                latestName = payload['name']
+            except FileExistsError:
+                return False
+        file = open(self.getFullPath(latestName),"w")
+        lines = payload['content'].readlines()
         for line in lines:
             file.write(line)
         return True

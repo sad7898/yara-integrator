@@ -3,12 +3,13 @@ import axios, { Axios, AxiosError } from "axios";
 import * as React from "react";
 import { useState, useEffect, ChangeEvent } from "react";
 
-export const useUploadForm = (route: string) => {
+export const useUploadForm = (route: string, onSubmitCallback?: () => void) => {
   const [error, setError] = useState("");
   const [progress, setProgress] = useState(0);
   const [file, setFile] = useState<File>();
-  const onSubmit = async () => {
+  const onSubmit = async (filename = "") => {
     const formData = new FormData();
+    if (filename) formData.append("name", filename);
     formData.append("file", file ?? "");
     setProgress(0);
     setError("");
@@ -26,13 +27,15 @@ export const useUploadForm = (route: string) => {
         },
       })
       .then(({ data }) => {
-        result = data.data;
+        result = data;
+        if (onSubmitCallback) onSubmitCallback();
       })
       .catch((err: AxiosError<any, any>) => {
         setProgress(0);
         setFile(undefined);
         setError(err?.response?.data.error);
       });
+    console.log(result);
     return result;
   };
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {

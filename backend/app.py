@@ -37,10 +37,11 @@ def addRule():
     if request.method == 'POST':
         if 'file' not in request.files:
             abort(400,description="File not found")
+        name = request.form['name']
         file = request.files['file']
         if file.filename == "":
-            abort(400,description="invalid file format")            
-        return {"success": scanner.addRule(file.filename,file.stream)}
+            abort(400,description="invalid file format")         
+        return {"success": scanner.addRule(file.filename if name is None else name,file.stream)}
 
 @app.route("/yara",methods=['GET'])
 def getRules():
@@ -51,6 +52,15 @@ def getRules():
 def searchRule(filename:str):
      if request.method == 'GET':
           return {"data":scanner.searchRuleByFilename(filename)}
+
+@app.route("/yara/<currentFilename>",methods=['PUT'])
+def updateRule(currentFilename:str):
+     if (request.method == 'PUT'):
+        newFilename = request.form['name']
+        content = request.form['content']
+        result = scanner.updateRule(currentFilename,{"name":newFilename,"content":content})
+        return {"success":result}
+          
 
 
 
