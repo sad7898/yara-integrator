@@ -17,6 +17,17 @@ export default function Rules() {
   useEffect(() => {
     fetchRules();
   }, [fetchRules]);
+  const onDeleteRules = useCallback(async () => {
+    client
+      .post("/yara/remove", { data: selectedRules.map((rule) => rule.name) })
+      .then(({ data }) => {
+        console.log(data);
+      })
+      .catch((err) => alert(err))
+      .finally(() => {
+        fetchRules();
+      });
+  }, [fetchRules, selectedRules]);
   const onSelectRow = (rule: Rule) => {
     const filteredRules = selectedRules.filter(
       (selected) => selected.name !== rule.name
@@ -31,7 +42,7 @@ export default function Rules() {
         <div className="flex flex-row justify-between w-full mb-2">
           <h1 className="text-black text-5xl">YARA Rules</h1>
           <div className="flex flex-row gap-4 h-10">
-            <Button>Delete</Button>
+            <Button onClick={onDeleteRules}>Delete</Button>
             <Button onClick={() => router.push("/rules/create")}>New</Button>
           </div>
         </div>
