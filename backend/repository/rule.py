@@ -25,13 +25,13 @@ class Repository:
                     return open(os.path.join(f"{RULE_DIRECTORY}/{file}"),"r")
         return None
     
-    def delete(self, name:str) -> bool:
+    def delete(self, names) -> bool:
         for root, dirs, files in os.walk(RULE_DIRECTORY):
-            if name in files:
-                os.remove(os.path.join(root, name))
-                print(f"File {name} found and removed at {root}")
-                return True
-        return False
+            for name in names:
+                if name in files:
+                    os.remove(os.path.join(root, name))
+                    print(f"File {name} found and removed at {root}")
+        return True
     
     def getFullPath(self,filename:str) -> str:
         return os.path.join(f"{RULE_DIRECTORY}/{filename}")

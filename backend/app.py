@@ -60,7 +60,13 @@ def updateRule(currentFilename:str):
         content = request.form['content']
         result = scanner.updateRule(currentFilename,{"name":newFilename,"content":content})
         return {"success":result}
-          
+
+@app.route("/yara/remove",methods=['POST'])
+def deleteRule():
+     if (request.method=='POST'):
+        filenames = request.json['data']
+        return {"success":scanner.deleteRules(filenames)}
+     
 
 
 

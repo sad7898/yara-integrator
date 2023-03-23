@@ -52,7 +52,8 @@ def updateRule(currentFilename:str,payload: dict) -> bool:
        abort(400,description="Invalid Syntax")
     stream.seek(0)
     return ruleRepository.update(currentFilename,{"name":payload['name'],"content":stream})
-
+def deleteRules(names: list[str]):
+    return ruleRepository.delete(names)
 def searchRuleByFilename(name: str):
     file = ruleRepository.searchByName(name)
     if (file is not None):

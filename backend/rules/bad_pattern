@@ -1,0 +1,8 @@
+rule bad_pattern
+{
+    strings:
+        $malware_1 = "bad text1"
+	$malware_2 = "bad pattern2"
+    condition:
+        $malware_1 or $malware_2
+}
