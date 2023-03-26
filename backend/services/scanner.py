@@ -14,8 +14,8 @@ ruleRepository = rule.Repository()
 
 def scan(filename:str,stream:IO):
     dirPath,decompiledApkPath = dex2jar.decompileApk(filename,stream)
-    ruleMap = ruleRepository.list()
-    rules = yara.compile(filepaths=ruleMap)
+    rules = ruleRepository.list()
+    rules = yara.compile(filepaths={rule['name']:ruleRepository.getFullPath(rule['id']) for rule in rules})
     if decompiledApkPath is None or dirPath is None:
         matches = rules.match(data=stream.read())
     else:
@@ -30,38 +30,44 @@ def scan(filename:str,stream:IO):
         dex2jar.cleanTempDir(dirPath)
     return result
 
-def addRule(name: str,stream: IO) -> bool:
+def addRule(name: str,stream: IO,description: str) -> bool:
+    if (ruleRepository.searchByName(name) is not None):
+        abort(400,description="File with this name already exists.")
     try:
         yara.compile(file=stream)
     except yara.SyntaxError:
         abort(400,description="Invalid Syntax")
     stream.seek(0)
-    return ruleRepository.insert(name,stream)
+    return ruleRepository.insert(name,description,stream)
 
 def getRules():
    ruleMap = ruleRepository.list()
-   return [{"name": rule,"path":ruleMap[rule]} for rule in ruleMap]
+   return ruleMap
 
-def updateRule(currentFilename:str,payload: dict) -> bool:
+def updateRule(id:str,payload: dict) -> bool:
     stream = io.StringIO(payload['content'])
-    if (searchRuleByFilename(currentFilename) == None):
-        abort(400,description=f"Cannot find rule with name {currentFilename}")
+    rule = ruleRepository.searchById(id)
+    if (rule == None):
+        abort(400,description=f"Cannot find rule with id {id}")
+    if (payload['name'] != rule['name'] and ruleRepository.searchByName(payload['name']) is not None):
+        abort(400,description=f"File with name {payload['name']} already exist")
     try:
         yara.compile(source=payload['content'])
     except yara.SyntaxError:
        abort(400,description="Invalid Syntax")
     stream.seek(0)
-    return ruleRepository.update(currentFilename,{"name":payload['name'],"content":stream})
-def deleteRules(names: list[str]):
-    return ruleRepository.delete(names)
-def searchRuleByFilename(name: str):
-    file = ruleRepository.searchByName(name)
-    if (file is not None):
-        return {
-            "name": os.path.basename(file.name),
-            "content": file.read()
-        }
-    return None
+    return ruleRepository.update(id,{"name":payload['name'] if payload['name'] != rule['name'] else None,"content":stream,"description":payload['description']})
+
+def deleteRules(ids: list[str]):
+    return ruleRepository.delete(ids)
+
+def searchRuleById(id:str):
+    rule = ruleRepository.searchById(id)
+    if (rule is not None):
+        print(rule)
+        rule['content'] = open(ruleRepository.getFullPath(rule['id']),'r').read()
+        return rule
+
 
         
     

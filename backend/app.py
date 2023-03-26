@@ -10,8 +10,10 @@ from utils import file as fileUtils
 from services import scanner
      
 app = Flask(__name__)
-app.config['UPLOAD_FOLDER'] = '/app/apk'
 CORS(app)
+
+
+
 
 
 
@@ -38,34 +40,36 @@ def addRule():
         if 'file' not in request.files:
             abort(400,description="File not found")
         name = request.form['name']
+        description = request.form['description']
         file = request.files['file']
         if file.filename == "":
             abort(400,description="invalid file format")         
-        return {"success": scanner.addRule(file.filename if name is None else name,file.stream)}
+        return {"success": scanner.addRule(file.filename if name is None else name,file.stream,description)}
 
 @app.route("/yara",methods=['GET'])
 def getRules():
      if request.method == 'GET':
           return {"data":scanner.getRules()}
 
-@app.route("/yara/<filename>",methods=['GET'])
-def searchRule(filename:str):
+@app.route("/yara/<id>",methods=['GET'])
+def searchRule(id:str):
      if request.method == 'GET':
-          return {"data":scanner.searchRuleByFilename(filename)}
+          return {"data":scanner.searchRuleById(id)}
 
-@app.route("/yara/<currentFilename>",methods=['PUT'])
-def updateRule(currentFilename:str):
+@app.route("/yara/<id>",methods=['PUT'])
+def updateRule(id:str):
      if (request.method == 'PUT'):
+        description = request.form['description']
         newFilename = request.form['name']
         content = request.form['content']
-        result = scanner.updateRule(currentFilename,{"name":newFilename,"content":content})
+        result = scanner.updateRule(id,{"name":newFilename,"content":content,"description":description})
         return {"success":result}
 
 @app.route("/yara/remove",methods=['POST'])
 def deleteRule():
      if (request.method=='POST'):
-        filenames = request.json['data']
-        return {"success":scanner.deleteRules(filenames)}
+        fileIds = request.json['data']
+        return {"success":scanner.deleteRules(fileIds)}
      
 
 
