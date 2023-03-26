@@ -1,5 +1,5 @@
 import { useRouter } from "next/router";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import styles from "@/styles/Home.module.css";
 import { client } from "@/utils/axiosInstance";
 import { Button } from "@/components/button";
@@ -33,20 +33,29 @@ const Rule = () => {
         });
     }
   };
-  const fetchRule = async (id: string) => {
-    const { data } = await client.get(`/yara/${encodeURI(id)}`);
-    if (data.data) {
-      setName(data.data.name);
-      setContent(data.data.content);
-      setDescription(data.data.description);
-    }
-  };
+  const fetchRule = useCallback(
+    (id: string) => {
+      client
+        .get(`/yara/${encodeURI(id)}`)
+        .then(({ data }) => {
+          if (data.data) {
+            setName(data.data.name);
+            setContent(data.data.content);
+            setDescription(data.data.description);
+          }
+        })
+        .catch(() => {
+          router.replace("/404");
+        });
+    },
+    [router]
+  );
   useEffect(() => {
     if (id && id.length > 0) {
       if (Array.isArray(id)) fetchRule(id[0]);
       else fetchRule(id);
     }
-  }, [id]);
+  }, [fetchRule, id]);
   return (
     <main
       className={`${styles.main} bg-bg flex flex-col items-center justify-center`}

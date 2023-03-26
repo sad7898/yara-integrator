@@ -64,8 +64,11 @@ def deleteRules(ids: list[str]):
 def searchRuleById(id:str):
     rule = ruleRepository.searchById(id)
     if (rule is not None):
-        print(rule)
-        rule['content'] = open(ruleRepository.getFullPath(rule['id']),'r').read()
+        try:
+            rule['content'] = open(ruleRepository.getFullPath(rule['id']),'r').read()
+        except FileNotFoundError:
+            ruleRepository.delete([id])
+            abort(404,description="Cannot find the rule you are looking for, please refresh the page and try again.")
         return rule
 
 
