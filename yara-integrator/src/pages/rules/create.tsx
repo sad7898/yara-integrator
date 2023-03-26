@@ -13,8 +13,12 @@ const CreateRule = () => {
   const { onSubmit, error, progress, handleFileChange, file, removeFile } =
     useUploadForm("/yara", () => router.push("/rules"));
   const [filename, setFilename] = useState("");
+  const [description, setDescription] = useState("");
   const onFileNameChange = (e: ChangeEvent<HTMLInputElement>) => {
     setFilename(e.target.value);
+  };
+  const onDescriptionChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
+    setDescription(e.target.value);
   };
   useEffect(() => {
     if (file) {
@@ -29,7 +33,8 @@ const CreateRule = () => {
     >
       <Block className="flex flex-col text-black gap-y-5">
         <h1 className="font-bold text-3xl">Add new YARA rule</h1>
-        <div className="flex flex-col gap-y-3 mt-5 mb-8">
+        <div className="flex flex-col gap-y-3 mt-2 mb-8">
+          <label>Name</label>
           <input
             type="text"
             className="border p-2"
@@ -37,6 +42,13 @@ const CreateRule = () => {
             value={filename}
             onChange={onFileNameChange}
           ></input>
+          <label>Description</label>
+          <textarea
+            className="border w-full min-h-[200px] px-1 py-1"
+            required
+            value={description}
+            onChange={onDescriptionChange}
+          />
           {!file ? (
             <UploadButton
               onFileChange={handleFileChange}
@@ -54,7 +66,10 @@ const CreateRule = () => {
           )}
         </div>
         <div>
-          <Button className="max-w-[172px]" onClick={() => onSubmit(filename)}>
+          <Button
+            className="max-w-[172px]"
+            onClick={() => onSubmit({ name: filename, description })}
+          >
             Submit
           </Button>
         </div>

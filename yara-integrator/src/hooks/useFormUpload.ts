@@ -2,14 +2,18 @@ import { client } from "@/utils/axiosInstance";
 import axios, { Axios, AxiosError } from "axios";
 import * as React from "react";
 import { useState, useEffect, ChangeEvent } from "react";
-
+interface FileProperty {
+  name?: string;
+  description?: string;
+}
 export const useUploadForm = (route: string, onSubmitCallback?: () => void) => {
   const [error, setError] = useState("");
   const [progress, setProgress] = useState(0);
   const [file, setFile] = useState<File>();
-  const onSubmit = async (filename = "") => {
+  const onSubmit = async (payload = {} as FileProperty) => {
     const formData = new FormData();
-    if (filename) formData.append("name", filename);
+    formData.append("name", payload.name ?? "");
+    formData.append("description", payload.description ?? "");
     formData.append("file", file ?? "");
     setProgress(0);
     setError("");
