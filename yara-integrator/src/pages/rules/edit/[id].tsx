@@ -21,6 +21,7 @@ const Rule = () => {
       "content",
       jsbeautifier(content.replace(/(\r\n|\n|\r)/gm, ""))
     );
+    formData.append("description", description);
     if (id && !Array.isArray(id)) {
       client
         .put(`/yara/${encodeURI(id)}`, formData)

@@ -2,16 +2,11 @@ from io import TextIOWrapper
 import os
 import sqlite3
 from typing import IO
-from db.db import get_db
 import datetime
 RULE_DIRECTORY = "rules"
 class Repository:
-    def __new__(cls):
-        if not hasattr(cls, 'instance'):
-            cls.instance = super(Repository, cls).__new__(cls)
-        return cls.instance
-    def __init__(self):
-        self.conn = get_db()
+    def __init__(self,conn):
+        self.conn = conn
     def rowToJson(self,row):
         return {
             "id": row[0],
@@ -36,11 +31,11 @@ class Repository:
         r = [self.rowToJson(row) for row in rows]
         return r
     
-    def searchById(self,id) -> dict | None:
+    def searchById(self,id) -> dict:
         row = self.conn.execute('SELECT * FROM rules WHERE id = ?',(id,)).fetchone()
         return self.rowToJson(row) if row is not None else row
     
-    def searchByName(self,name="") -> dict | None:
+    def searchByName(self,name="") -> dict:
         row = self.conn.execute('SELECT * FROM rules WHERE name = ?',(name,)).fetchone()
         return self.rowToJson(row) if row is not None else row
     
@@ -64,9 +59,9 @@ class Repository:
     
     def update(self, id:str,payload) -> bool:
         if (payload['name'] is not None):
-            self.conn.execute('UPDATE rules SET name = ?, description = ?, updated = ? WHERE id = ?',(payload['name'],"hi world",datetime.datetime.now(),str(id)))
+            self.conn.execute('UPDATE rules SET name = ?, description = ?, updated = ? WHERE id = ?',(payload['name'],payload['description'],datetime.datetime.now(),str(id)))
         else:
-            self.conn.execute('UPDATE rules SET description = ?, updated = ? WHERE id = ?',("hi world",datetime.datetime.now(),str(id)))
+            self.conn.execute('UPDATE rules SET description = ?, updated = ? WHERE id = ?',(payload['description'],datetime.datetime.now(),str(id)))
         self.conn.commit()
         file = open(self.getFullPath(id),"w")
         lines = payload['content'].readlines()
