@@ -12,14 +12,14 @@ export default function Rules() {
   const router = useRouter();
   const fetchRules = useCallback(async () => {
     const { data } = await client.get("/yara");
-    setRules(data.data);
+    setRules(data.data as Rule[]);
   }, []);
   useEffect(() => {
     fetchRules();
   }, [fetchRules]);
   const onDeleteRules = useCallback(async () => {
     client
-      .post("/yara/remove", { data: selectedRules.map((rule) => rule.name) })
+      .post("/yara/remove", { data: selectedRules.map((rule) => rule.id) })
       .then(({ data }) => {
         console.log(data);
       })
@@ -30,7 +30,7 @@ export default function Rules() {
   }, [fetchRules, selectedRules]);
   const onSelectRow = (rule: Rule) => {
     const filteredRules = selectedRules.filter(
-      (selected) => selected.name !== rule.name
+      (selected) => selected.id !== rule.id
     );
     if (selectedRules.length !== filteredRules.length)
       setSelectedRules(filteredRules);
@@ -38,7 +38,7 @@ export default function Rules() {
   };
   return (
     <main className={styles.main + " bg-bg flex flex-col items-center"}>
-      <section className="w-3/5 max-w-6xl">
+      <section className="w-4/5 max-w-6xl">
         <div className="flex flex-row justify-between w-full mb-2">
           <h1 className="text-black text-5xl">YARA Rules</h1>
           <div className="flex flex-row gap-4 h-10">
@@ -46,7 +46,7 @@ export default function Rules() {
             <Button onClick={() => router.push("/rules/create")}>New</Button>
           </div>
         </div>
-        <Table headers={["Name", "", ""]}>
+        <Table headers={["Name", "Description", "", "Last Modified", ""]}>
           {rules.map((rule) => (
             <RuleRow
               onSelectRow={() => onSelectRow(rule)}

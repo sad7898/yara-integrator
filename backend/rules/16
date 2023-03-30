@@ -1,5 +1,7 @@
 rule ExampleRule
 {
+    meta:
+        description = "helloworld"
     strings:
         $my_text_string = "text here"
         $my_hex_string = { E2 34 A1 C8 23 FB }
