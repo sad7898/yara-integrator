@@ -17,8 +17,7 @@ export const useUploadForm = (route: string, onSubmitCallback?: () => void) => {
     formData.append("file", file ?? "");
     setProgress(0);
     setError("");
-    let result;
-    await client
+    const result = await client
       .post(route, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
@@ -30,16 +29,16 @@ export const useUploadForm = (route: string, onSubmitCallback?: () => void) => {
           }
         },
       })
-      .then(({ data }) => {
-        result = data;
+      .then((res) => {
+        console.log(res);
         if (onSubmitCallback) onSubmitCallback();
+        return res.data;
       })
       .catch((err: AxiosError<any, any>) => {
         setProgress(0);
         setFile(undefined);
         setError(err?.response?.data.error);
       });
-    console.log(result);
     return result;
   };
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {

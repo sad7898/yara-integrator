@@ -8,8 +8,9 @@ from flask import abort
 
 
 class Scanner:
-    def __init__(self,ruleRepository: rule.Repository):
+    def __init__(self,ruleRepository: rule.Repository,reporter):
         self.ruleRepository = ruleRepository
+        self.reporter = reporter
 
     def scan(self,filename:str,stream:IO):
         dirPath,decompiledApkPath = dex2jar.decompileApk(filename,stream)
@@ -27,7 +28,8 @@ class Scanner:
                 result[match.namespace] = [match.rule]
         if (dirPath is not None):
             dex2jar.cleanTempDir(dirPath)
-        return result
+        r = self.reporter.report(result)
+        return r
 
     def addRule(self,name: str,stream: IO,description: str) -> bool:
         if (self.ruleRepository.searchByName(name) is not None):

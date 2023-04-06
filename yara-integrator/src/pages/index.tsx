@@ -17,6 +17,18 @@ export default function Home() {
   const router = useRouter();
   const { onSubmit, error, progress, handleFileChange, file } =
     useUploadForm("/scan");
+  const handleSubmit = async () => {
+    const pdf = await onSubmit();
+    console.log(pdf);
+    // if (pdf) {
+    //   const blob = new Blob([pdf], { type: "application/pdf" });
+    //   const url = window.URL.createObjectURL(blob);
+    //   const a = document.createElement("a");
+    //   a.href = url;
+    //   a.download = `${file?.name}-report.pdf`;
+    //   a.click();
+    // }
+  };
 
   return (
     <main
@@ -45,7 +57,7 @@ export default function Home() {
             </Button>
           </div>
           <div className="w-full">
-            <Button onClick={() => onSubmit()} disabled={!file}>
+            <Button onClick={handleSubmit} disabled={!file}>
               SCAN
             </Button>
           </div>
