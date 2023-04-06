@@ -1,5 +1,4 @@
 from io import StringIO
-from dotenv import load_dotenv
 from flask import Flask, abort, jsonify, make_response, request,g, send_file
 from werkzeug.datastructures import FileStorage
 from flask_cors import CORS
@@ -8,7 +7,7 @@ from .db import init_db,db
 from .services import reporter,scanner as scannerService
 from .repository import rule
 def create_app(test_config=None):
-    load_dotenv()
+
     init_db.init_db()
     connection = db.get_db()
     ruleRepository = rule.Repository(connection)
@@ -32,7 +31,7 @@ def create_app(test_config=None):
             if file.filename == "" or not fileUtils.is_file_allowed(file.filename):
                 abort(400,description="invalid file format")    
             pdf = scanner.scan(file.filename,file.stream)
-            return send_file(path_or_file=pdf,download_name=f"report-{file.filename}.pdf",mimetype="application/pdf")
+            return send_file(filename_or_fp=pdf,mimetype="application/pdf")
             
     @app.route('/yara',methods=["POST"])
     def addRule():

@@ -19,15 +19,14 @@ export default function Home() {
     useUploadForm("/scan");
   const handleSubmit = async () => {
     const pdf = await onSubmit();
-    console.log(pdf);
-    // if (pdf) {
-    //   const blob = new Blob([pdf], { type: "application/pdf" });
-    //   const url = window.URL.createObjectURL(blob);
-    //   const a = document.createElement("a");
-    //   a.href = url;
-    //   a.download = `${file?.name}-report.pdf`;
-    //   a.click();
-    // }
+    if (pdf) {
+      const blob = new Blob([pdf], { type: "application/pdf" });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${file?.name}-report.pdf`;
+      a.click();
+    }
   };
 
   return (

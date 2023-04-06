@@ -15,17 +15,20 @@ class Scanner:
     def scan(self,filename:str,stream:IO):
         dirPath,decompiledApkPath = dex2jar.decompileApk(filename,stream)
         rules = self.ruleRepository.list()
-        rules = yara.compile(filepaths={rule['name']:self.ruleRepository.getFullPath(rule['id']) for rule in rules})
+        compiledRules = yara.compile(filepaths={rule['name']:self.ruleRepository.getFullPath(rule['id']) for rule in rules})
         if decompiledApkPath is None or dirPath is None:
-            matches = rules.match(data=stream.read())
+            matches = compiledRules.match(data=stream.read())
         else:
-            matches = rules.match(filepath=decompiledApkPath)
+            matches = compiledRules.match(filepath=decompiledApkPath)
         result = {}
         for match in matches:   
             if match.namespace in result:
                 result[match.namespace].append(match.rule)
             else:
-                result[match.namespace] = [match.rule]
+                result[match.namespace] = {
+                    "rules": [match.rule],
+                    "description": [rule for rule in rules if rule['name'] == match.namespace][0]['description']
+                }
         if (dirPath is not None):
             dex2jar.cleanTempDir(dirPath)
         r = self.reporter.report(result)
