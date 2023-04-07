@@ -15,12 +15,10 @@ const inter = Inter({ subsets: ["latin"] });
 
 export default function Home() {
   const router = useRouter();
-  const { onSubmit, error, progress, handleFileChange, file } =
-    useUploadForm("/scan");
-  const handleSubmit = async () => {
-    const pdf = await onSubmit();
-    if (pdf) {
-      const blob = new Blob([pdf], { type: "application/pdf" });
+  const handleResponse = async (response?: any) => {
+    if (response.data) {
+      console.log(response.data);
+      const blob = new Blob([response.data], { type: "application/pdf" });
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
@@ -28,6 +26,11 @@ export default function Home() {
       a.click();
     }
   };
+  const { onSubmit, error, progress, handleFileChange, file } = useUploadForm(
+    "/scan",
+    handleResponse,
+    { responseType: "blob" }
+  );
 
   return (
     <main
@@ -56,7 +59,7 @@ export default function Home() {
             </Button>
           </div>
           <div className="w-full">
-            <Button onClick={handleSubmit} disabled={!file}>
+            <Button onClick={() => onSubmit()} disabled={!file}>
               SCAN
             </Button>
           </div>

@@ -2,21 +2,27 @@ import io
 
 from typing import IO
 import yara
+
+from backend.services.mobsfAdapter import MobSFAdapter
+from backend.services.reporter import Reporter
 from ..utils import dex2jar
 from ..repository import rule
 from flask import abort
 
 
 class Scanner:
-    def __init__(self,ruleRepository: rule.Repository,reporter):
+    def __init__(self,ruleRepository: rule.Repository):
         self.ruleRepository = ruleRepository
-        self.reporter = reporter
 
-    def scan(self,filename:str,stream:IO):
-        dirPath,decompiledApkPath = dex2jar.decompileApk(filename,stream)
+    def scan(self,filename:str,stream:IO,shouldDecompile: bool):
+        stream.seek(0)
+        if shouldDecompile:
+            dirPath,decompiledApkPath = dex2jar.decompileApk(filename,stream)
+
         rules = self.ruleRepository.list()
         compiledRules = yara.compile(filepaths={rule['name']:self.ruleRepository.getFullPath(rule['id']) for rule in rules})
-        if decompiledApkPath is None or dirPath is None:
+
+        if  (not shouldDecompile) or decompiledApkPath is None or dirPath is None:
             matches = compiledRules.match(data=stream.read())
         else:
             matches = compiledRules.match(filepath=decompiledApkPath)
@@ -31,8 +37,7 @@ class Scanner:
                 }
         if (dirPath is not None):
             dex2jar.cleanTempDir(dirPath)
-        r = self.reporter.report(result)
-        return r
+        return result
 
     def addRule(self,name: str,stream: IO,description: str) -> bool:
         if (self.ruleRepository.searchByName(name) is not None):
@@ -74,6 +79,9 @@ class Scanner:
                 self.ruleRepository.delete([id])
                 abort(404,description="Cannot find the rule you are looking for, please refresh the page and try again.")
             return rule
+    
+
+
 
 
         

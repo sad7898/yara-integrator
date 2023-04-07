@@ -1,12 +1,21 @@
 import { client } from "@/utils/axiosInstance";
-import axios, { Axios, AxiosError } from "axios";
+import axios, {
+  Axios,
+  AxiosError,
+  AxiosRequestConfig,
+  AxiosResponse,
+} from "axios";
 import * as React from "react";
 import { useState, useEffect, ChangeEvent } from "react";
 interface FileProperty {
   name?: string;
   description?: string;
 }
-export const useUploadForm = (route: string, onSubmitCallback?: () => void) => {
+export const useUploadForm = (
+  route: string,
+  onSuccessCallback?: (response?: AxiosResponse<any, any>) => void,
+  axiosConfig?: AxiosRequestConfig<FormData>
+) => {
   const [error, setError] = useState("");
   const [progress, setProgress] = useState(0);
   const [file, setFile] = useState<File>();
@@ -19,6 +28,7 @@ export const useUploadForm = (route: string, onSubmitCallback?: () => void) => {
     setError("");
     const result = await client
       .post(route, formData, {
+        ...axiosConfig,
         headers: {
           "Content-Type": "multipart/form-data",
         },
@@ -31,7 +41,7 @@ export const useUploadForm = (route: string, onSubmitCallback?: () => void) => {
       })
       .then((res) => {
         console.log(res);
-        if (onSubmitCallback) onSubmitCallback();
+        if (onSuccessCallback) onSuccessCallback(res);
         return res.data;
       })
       .catch((err: AxiosError<any, any>) => {

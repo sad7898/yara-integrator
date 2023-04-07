@@ -36,8 +36,6 @@ class Reporter:
             
     def listToTable(self,data: list,headers:list):
         table_data = [headers] + data 
-    
-
         # Create the table object
         table = Table(table_data,hAlign='LEFT')
         table.setStyle(self.tableStyle)
@@ -53,13 +51,17 @@ class Reporter:
         pdfBytes.seek(0)
         return pdfBytes
 
-    def appendBytesToPDF(self,bytes: IO,pdf: IO):
-        existing_pdf = PyPDF2.PdfFileWriter(stream=pdf)
-        new_page = PyPDF2.PdfFileReader(bytes).getPage(0)
-        existing_pdf.addPage(new_page)
-        return existing_pdf
+    def appendBytesToPDF(self,existingPDF: IO,newPDF:IO):
+        writer = PyPDF2.PdfMerger()
+        writer.append(existingPDF)
+        writer.append(fileobj=newPDF)
+        output = io.BytesIO()
+        writer.write(output)
+        output.seek(0)
+        return output
     
-    def report(self,yaraResults: dict,mobSfResults=None):
+    
+    def report(self,yaraResults: dict):
         headers = ["Namespace","Rules Matched","Description"]
         rows = []
         for namespace in yaraResults:
@@ -67,9 +69,6 @@ class Reporter:
             rows.append([namespace,",".join(yaraResults[namespace]['rules']),wrappedDesc])
         table = self.listToTable(rows,headers)
         pdf = self.buildPdf([table])
-        if (mobSfResults is None):
-            return pdf
-        else:
-            return pdf
+        return pdf
                     
 

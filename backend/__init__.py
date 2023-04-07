@@ -4,15 +4,16 @@ from werkzeug.datastructures import FileStorage
 from flask_cors import CORS
 from .utils import file as fileUtils
 from .db import init_db,db
-from .services import reporter,scanner as scannerService
+from .services import reporter,scanner as scannerService,mobsfAdapter
 from .repository import rule
 def create_app(test_config=None):
 
     init_db.init_db()
     connection = db.get_db()
     ruleRepository = rule.Repository(connection)
+    mobsf = mobsfAdapter.MobSFAdapter()
     reporterService = reporter.Reporter()
-    scanner = scannerService.Scanner(ruleRepository,reporterService)
+    scanner = scannerService.Scanner(ruleRepository)
     app = Flask(__name__)
     CORS(app)
     @app.errorhandler(400)
@@ -29,9 +30,15 @@ def create_app(test_config=None):
                 abort(400,description="File not found")
             file = request.files['file']
             if file.filename == "" or not fileUtils.is_file_allowed(file.filename):
-                abort(400,description="invalid file format")    
-            pdf = scanner.scan(file.filename,file.stream)
-            return send_file(filename_or_fp=pdf,mimetype="application/pdf")
+                abort(400,description="invalid file format")
+            res = mobsf.upload(file.filename,file.stream)   
+            mobsf.scan(res['hash'],res['scan_type'],res['file_name'])
+            mobSfReport = mobsf.getPDFReport(res['hash'])
+
+            yaraResult = scanner.scan(file.filename,file.stream,True)
+            yaraReport = reporterService.report(yaraResult)
+            finalReport = reporterService.appendBytesToPDF(mobSfReport,yaraReport)
+            return send_file(filename_or_fp=finalReport,mimetype="application/pdf")
             
     @app.route('/yara',methods=["POST"])
     def addRule():

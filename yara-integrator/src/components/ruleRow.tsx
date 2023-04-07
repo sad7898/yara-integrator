@@ -50,7 +50,7 @@ export const RuleRow = ({
         <div className="ml-2">{name}</div>
       </div>
       <div className="p-2 col-span-2 bg-white text-black border-b flex flex-row items-center">
-        <div className="ml-2 truncate ...">{description}</div>
+        <div className="ml-2 truncate ... ">{description}</div>
       </div>
       <div className="p-2 col-span-1 bg-white text-black border-b flex flex-row items-center">
         <div className="ml-2">
