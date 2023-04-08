@@ -28,7 +28,6 @@ yarn-error.log*
 
 # local env files
 .env*.local
-.env.local
 
 # vercel
 .vercel
@@ -37,8 +36,11 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+
 # python backend
 __pycache__
 tempApk
 
-/db/database.db
+
+/backend/rules
+/backend/storage

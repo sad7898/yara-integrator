@@ -1,6 +1,6 @@
 import sqlite3
 import os
-DATABASE = os.path.join("db","database.db")
+DATABASE = os.path.join("storage","database.db")
 db = None
 def get_db():
     global db

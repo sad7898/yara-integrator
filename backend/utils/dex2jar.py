@@ -6,20 +6,20 @@ from typing import IO
 import uuid
 import shutil
 
-from backend.utils.file import get_file_extension
+from .file import get_file_extension
 
 TEMP_APK_PATH = "tempApk"
 
 def getCmdStr() -> str:
     if sys.platform == 'win32':
         return "d2j-dex2jar.bat"
-    return "sh d2j-dex2jar"
+    return "d2j-dex2jar.sh"
 
 
 def saveApkToTemp(filename:str,stream:IO):
     id = uuid.uuid4().hex
     dirPath = os.path.join(TEMP_APK_PATH,id)
-    os.mkdir(dirPath)
+    os.makedirs(dirPath)
     path = os.path.join(dirPath,filename)
     tempApk = open(path,"wb")
     lines = stream.readlines()

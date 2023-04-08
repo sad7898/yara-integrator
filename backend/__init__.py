@@ -19,6 +19,13 @@ def create_app(test_config=None):
     @app.errorhandler(400)
     def bad_request(e):
         return jsonify(error=str(e)), 400
+    @app.errorhandler(401)
+    def unauthorized(e):
+        return jsonify(error=str(e)), 401
+    
+    @app.errorhandler(500)
+    def somethingWrong(e):
+        return jsonify(error="something went wrong"),500
     @app.route('/')
     def hello():
         return "Hello World!"
@@ -28,7 +35,7 @@ def create_app(test_config=None):
             if ("apiKey" in request.form):
                 apiKey = request.form['apiKey']
                 os.environ['MOBSF_API_KEY'] = apiKey
-            if ("url" in request.form):
+            if ("url" in request.form and request.form['url']):
                 mobSfUrl = request.form['url']
                 os.environ['MOBSF_API_URL'] = mobSfUrl
             return {"success":True}

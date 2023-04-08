@@ -46,9 +46,13 @@ export const useUploadForm = (
       })
       .catch(async (err: AxiosError<any, any>) => {
         setProgress(0);
-        setError(
-          err?.response?.data.error ?? (await err.response?.data?.text())
-        );
+        console.log(err.response);
+        if (
+          err.response?.data instanceof Blob &&
+          err.response?.data?.type === "application/json"
+        )
+          setError(await err.response?.data?.text());
+        else setError(err.response?.data.error);
       });
     return result;
   };

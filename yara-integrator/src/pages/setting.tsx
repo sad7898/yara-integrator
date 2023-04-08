@@ -11,11 +11,21 @@ const Setting = () => {
   const [apiKey, setApiKey] = useState("");
   const [error, setError] = useState("");
   const handleMobSfUrlChange = (event: ChangeEvent<HTMLInputElement>) => {
+    if (!isValidUrl(event.target.value)) setError("URL is not valid");
+    else setError("");
     setMobSfUrl(event.target.value);
   };
 
   const handleApiKeyChange = (event: ChangeEvent<HTMLInputElement>) => {
     setApiKey(event.target.value);
+  };
+  const isValidUrl = (url: string) => {
+    try {
+      new URL(url);
+      return true;
+    } catch (err) {
+      return false;
+    }
   };
   const handleSubmit = () => {
     const formData = new FormData();

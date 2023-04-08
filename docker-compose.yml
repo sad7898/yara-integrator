@@ -1,0 +1,23 @@
+version: "3.8"
+services:
+  api:
+    build:
+      context: "backend"
+      dockerfile: Dockerfile
+    # flask requires SIGINT to stop gracefully
+    # (default stop signal from Compose is SIGTERM)
+    stop_signal: SIGINT
+    ports:
+      - "5000:5000"
+    volumes:
+      - db-data:/server/storage
+      - yara-rules:/server/rules
+  web:
+    build:
+      context: "yara-integrator"
+      dockerfile: Dockerfile
+    ports:
+      - 3003:3000
+volumes:
+  db-data:
+  yara-rules:

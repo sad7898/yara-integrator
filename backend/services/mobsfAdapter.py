@@ -11,7 +11,7 @@ class MobSFAdapter:
         def wrapper(*args, **kwargs):
             try:
                 result = func(*args, **kwargs)
-            except Exception as e:
+            except requests.exceptions.ConnectionError as e:
                 abort(400,description=f"Cannot connect to MobSF api with {os.environ['MOBSF_API_URL']}")
             return result
         return wrapper
@@ -30,7 +30,7 @@ class MobSFAdapter:
             return response.json()
         else:
             print(response.json())
-            abort(500,description=f'Error sending file to MobSF: {response.status_code} {response.reason}')
+            abort(response.status_code,description=f'Error sending file to MobSF: {response.status_code} {response.reason}')
     @safeRequest
     def scan(self,hash,scanType,filename):
         headers = {'Authorization': os.environ['MOBSF_API_KEY']}
@@ -46,7 +46,7 @@ class MobSFAdapter:
             return response.content
         else:
             print(response.json())
-            abort(500,description=f'Error scanning file with MobSF: {response.status_code} {response.reason}')
+            abort(response.status_code,description=f'Error scanning file with MobSF: {response.status_code} {response.reason}')
     @safeRequest
     def getPDFReport(self,hash):
         url = os.environ['MOBSF_API_URL']
@@ -58,4 +58,4 @@ class MobSFAdapter:
             return BytesIO(response.content)
         else:
             print(response.json())
-            abort(500,description=f'Error getting report from MobSF: {response.status_code} {response.reason}')
+            abort(response.status_code,description=f'Error getting report from MobSF: {response.status_code} {response.reason}')

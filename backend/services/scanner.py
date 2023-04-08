@@ -3,8 +3,8 @@ import io
 from typing import IO
 import yara
 
-from backend.services.mobsfAdapter import MobSFAdapter
-from backend.services.reporter import Reporter
+from .mobsfAdapter import MobSFAdapter
+from .reporter import Reporter
 from ..utils import dex2jar
 from ..repository import rule
 from flask import abort

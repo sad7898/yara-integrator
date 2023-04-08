@@ -1,5 +1,5 @@
-from backend import create_app
-from backend.db.init_db import init_db
+from . import create_app
+
 
 from dotenv import load_dotenv
 if __name__ == "__main__":
