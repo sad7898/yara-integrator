@@ -64,6 +64,9 @@ export default function Home() {
             </Button>
           </div>
         </div>
+        <div className="text-black">
+          **Make sure to configure MobSF API url and API key in setting page
+        </div>
         {error && <div className="text-red-500">{error}</div>}
       </div>
     </main>

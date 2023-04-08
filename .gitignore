@@ -40,3 +40,5 @@ next-env.d.ts
 # python backend
 __pycache__
 tempApk
+
+/db/database.db

@@ -15,8 +15,8 @@ export const Navbar = () => {
           <Anchor link="/rules" className="px-5">
             Manage YARA
           </Anchor>
-          <Anchor link="/" className="px-5">
-            Contact
+          <Anchor link="/setting" className="px-5">
+            Setting
           </Anchor>
         </div>
       </div>

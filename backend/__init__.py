@@ -1,6 +1,6 @@
 from io import StringIO
+import os
 from flask import Flask, abort, jsonify, make_response, request,g, send_file
-from werkzeug.datastructures import FileStorage
 from flask_cors import CORS
 from .utils import file as fileUtils
 from .db import init_db,db
@@ -22,7 +22,17 @@ def create_app(test_config=None):
     @app.route('/')
     def hello():
         return "Hello World!"
-
+    @app.route('/mobsf-api/config',methods=['POST'])
+    def configMobSf():
+        if request.method == 'POST':
+            if ("apiKey" in request.form):
+                apiKey = request.form['apiKey']
+                os.environ['MOBSF_API_KEY'] = apiKey
+            if ("url" in request.form):
+                mobSfUrl = request.form['url']
+                os.environ['MOBSF_API_URL'] = mobSfUrl
+            return {"success":True}
+            
     @app.route('/scan',methods=['POST'])
     def scan_apk():
         if request.method == 'POST':
@@ -38,7 +48,7 @@ def create_app(test_config=None):
             yaraResult = scanner.scan(file.filename,file.stream,True)
             yaraReport = reporterService.report(yaraResult)
             finalReport = reporterService.appendBytesToPDF(mobSfReport,yaraReport)
-            return send_file(filename_or_fp=finalReport,mimetype="application/pdf")
+            return send_file(path_or_file=finalReport,mimetype="application/pdf")
             
     @app.route('/yara',methods=["POST"])
     def addRule():

@@ -44,10 +44,11 @@ export const useUploadForm = (
         if (onSuccessCallback) onSuccessCallback(res);
         return res.data;
       })
-      .catch((err: AxiosError<any, any>) => {
+      .catch(async (err: AxiosError<any, any>) => {
         setProgress(0);
-        setFile(undefined);
-        setError(err?.response?.data.error);
+        setError(
+          err?.response?.data.error ?? (await err.response?.data?.text())
+        );
       });
     return result;
   };
