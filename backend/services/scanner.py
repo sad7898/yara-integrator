@@ -16,16 +16,12 @@ class Scanner:
 
     def scan(self,filename:str,stream:IO,shouldDecompile: bool):
         stream.seek(0)
+        data = stream
         if shouldDecompile:
-            dirPath,decompiledApkPath = dex2jar.decompileApk(filename,stream)
-
+            data = dex2jar.decompileApk(filename,stream)
         rules = self.ruleRepository.list()
         compiledRules = yara.compile(filepaths={rule['name']:self.ruleRepository.getFullPath(rule['id']) for rule in rules})
-
-        if  (not shouldDecompile) or decompiledApkPath is None or dirPath is None:
-            matches = compiledRules.match(data=stream.read())
-        else:
-            matches = compiledRules.match(filepath=decompiledApkPath)
+        matches = compiledRules.match(data=data.read() if data is not None else stream.read())
         result = {}
         for match in matches:   
             if match.namespace in result:
@@ -35,8 +31,6 @@ class Scanner:
                     "rules": [match.rule],
                     "description": [rule for rule in rules if rule['name'] == match.namespace][0]['description']
                 }
-        if (dirPath is not None):
-            dex2jar.cleanTempDir(dirPath)
         return result
 
     def addRule(self,name: str,stream: IO,description: str) -> bool:

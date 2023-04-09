@@ -5,6 +5,7 @@ import subprocess
 from typing import IO
 import uuid
 import shutil
+import tempfile
 
 from .file import get_file_extension
 
@@ -16,30 +17,33 @@ def getCmdStr() -> str:
     return "d2j-dex2jar.sh"
 
 
-def saveApkToTemp(filename:str,stream:IO):
-    id = uuid.uuid4().hex
-    dirPath = os.path.join(TEMP_APK_PATH,id)
-    os.makedirs(dirPath)
-    path = os.path.join(dirPath,filename)
+def saveApkToTemp(path:str,stream:IO):
     tempApk = open(path,"wb")
     lines = stream.readlines()
     for line in lines:
         tempApk.write(line)
-    return id,filename
+    tempApk.close()
+    return path
 
-def decompileApk(filename:str,apk: IO) -> str:
+def decompileApk(filename:str,apk: IO) -> IO:
     if (get_file_extension(filename) != "apk"):
         return None,None
-    dirId,filename = saveApkToTemp(filename,apk)
-    resultFilePath = os.path.join(TEMP_APK_PATH,dirId,f"{filename}-decompiled")
-    cmd = getCmdStr()
-    process = subprocess.run(args=[cmd,"-f",os.path.join(TEMP_APK_PATH,dirId,filename),"-o",resultFilePath],capture_output=True)
-    if process.stderr is not None:
-        return dirId,None
-    else:
-        return dirId,resultFilePath
-    
+    output = io.BytesIO()
+    with tempfile.TemporaryDirectory() as tmpdirname:
+        apkPath = saveApkToTemp(os.path.join(tmpdirname,filename),apk)
+        resultFilePath = os.path.join(tmpdirname,f"{filename}-decompiled")
+        cmd = getCmdStr()
+        try:
+            process = subprocess.run(args=[cmd,"-f",apkPath,"-o",resultFilePath],capture_output=True)
+            decompiledFile = open(resultFilePath,"rb")
+            lines = decompiledFile.readlines()
+            for line in lines:
+                output.write(line)
+            decompiledFile.close()
+            output.seek(0)
+            return output
+        except Exception as e:
+            print(e)
+            return None
+  
 
-
-def cleanTempDir(dirId: str):
-    shutil.rmtree(os.path.join(TEMP_APK_PATH,dirId))

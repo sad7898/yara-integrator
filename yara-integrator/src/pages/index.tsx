@@ -17,7 +17,6 @@ export default function Home() {
   const router = useRouter();
   const handleResponse = async (response?: any) => {
     if (response.data) {
-      console.log(response.data);
       const blob = new Blob([response.data], { type: "application/pdf" });
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
