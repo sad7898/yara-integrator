@@ -1,6 +1,6 @@
 FROM python:3.10-slim-buster
 ENV YARA_VERSION 4.2.3
-RUN apt-get update && apt-get install -y --no-install-recommends automake libtool make gcc pkg-config git unzip
+RUN apt-get update && apt-get install -y --no-install-recommends automake libtool make gcc pkg-config bison git unzip
 RUN echo "Install Yara from source..." \
   && cd /tmp/ \
   && git clone --recursive --branch v$YARA_VERSION https://github.com/VirusTotal/yara.git \

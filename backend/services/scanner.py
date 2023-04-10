@@ -1,9 +1,10 @@
 import io
+import os
 
 from typing import IO
+import zipfile
 import yara
-
-from .mobsfAdapter import MobSFAdapter
+import tempfile
 from .reporter import Reporter
 from ..utils import dex2jar
 from ..repository import rule
@@ -13,25 +14,49 @@ from flask import abort
 class Scanner:
     def __init__(self,ruleRepository: rule.Repository):
         self.ruleRepository = ruleRepository
-
-    def scan(self,filename:str,stream:IO,shouldDecompile: bool):
-        stream.seek(0)
-        data = stream
-        if shouldDecompile:
-            data = dex2jar.decompileApk(filename,stream)
-        rules = self.ruleRepository.list()
-        compiledRules = yara.compile(filepaths={rule['name']:self.ruleRepository.getFullPath(rule['id']) for rule in rules})
-        matches = compiledRules.match(data=data.read() if data is not None else stream.read())
-        result = {}
+    def _matchYaraRules(self,file: IO,rules,compiledRules=None,result=None):
+        if compiledRules is None:
+            compiledRules = yara.compile(filepaths={rule['name']:self.ruleRepository.getFullPath(rule['id']) for rule in rules})
+        matches = compiledRules.match(data=file.read())
+        if result is None:
+            result = {}
         for match in matches:   
             if match.namespace in result:
-                result[match.namespace].append(match.rule)
+                result[match.namespace]['rules'].append(match.rule)
             else:
                 result[match.namespace] = {
                     "rules": [match.rule],
                     "description": [rule for rule in rules if rule['name'] == match.namespace][0]['description']
                 }
+        for namespace in result:
+            result[namespace]['rules'] = list(set(result[namespace]['rules']))
         return result
+    def scanZip(self,zip: IO):
+        with tempfile.TemporaryDirectory() as tempdir:
+            jar = zipfile.ZipFile(zip)
+            jar.extractall(tempdir)
+            rules = self.ruleRepository.list()
+            compiledRules = yara.compile(filepaths={rule['name']:self.ruleRepository.getFullPath(rule['id']) for rule in rules})
+            result = {}
+            for root, dirs, files in os.walk(tempdir):
+                print(f"scanning files in dir {dirs}")
+                # Loop through all files in the current directory
+                for filename in files:
+                    file_path = os.path.join(root, filename)
+                    with open(file_path, 'r',encoding='iso-8859-1') as file:
+                        self._matchYaraRules(file,rules,compiledRules,result)
+            
+            return result
+                        
+                    
+    def scan(self,filename:str,stream:IO,shouldDecompile: bool):
+        stream.seek(0)
+        if shouldDecompile:
+            zip = dex2jar.decompileApk(filename,stream)
+            if zip is not None:
+                return self.scanZip(zip)
+        rules = self.ruleRepository.list()
+        return self._matchYaraRules(stream,rules)
 
     def addRule(self,name: str,stream: IO,description: str) -> bool:
         if (self.ruleRepository.searchByName(name) is not None):

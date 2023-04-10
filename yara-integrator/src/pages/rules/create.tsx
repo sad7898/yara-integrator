@@ -20,6 +20,12 @@ const CreateRule = () => {
   const onDescriptionChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
     setDescription(e.target.value);
   };
+  const handleSubmit = () => {
+    const formData = new FormData();
+    formData.append("name", filename);
+    formData.append("description", description);
+    onSubmit(formData);
+  };
   useEffect(() => {
     if (file) {
       setFilename(file.name);
@@ -66,10 +72,7 @@ const CreateRule = () => {
           )}
         </div>
         <div>
-          <Button
-            className="max-w-[172px]"
-            onClick={() => onSubmit({ name: filename, description })}
-          >
+          <Button className="max-w-[172px]" onClick={handleSubmit}>
             Submit
           </Button>
         </div>

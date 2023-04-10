@@ -5,13 +5,13 @@ from flask_cors import CORS
 from .utils import file as fileUtils
 from .db import init_db,db
 from .services import reporter,scanner as scannerService,mobsfAdapter
-from .repository import rule
+from .repository import rule,config
 def create_app(test_config=None):
 
     init_db.init_db()
     connection = db.get_db()
+    configRepository = config.Repository(connection)
     ruleRepository = rule.Repository(connection)
-    mobsf = mobsfAdapter.MobSFAdapter()
     reporterService = reporter.Reporter()
     scanner = scannerService.Scanner(ruleRepository)
     app = Flask(__name__)
@@ -29,17 +29,23 @@ def create_app(test_config=None):
     @app.route('/')
     def hello():
         return "Hello World!"
-    @app.route('/mobsf-api/config',methods=['POST'])
-    def configMobSf():
-        if request.method == 'POST':
-            if ("apiKey" in request.form):
-                apiKey = request.form['apiKey']
-                os.environ['MOBSF_API_KEY'] = apiKey
-            if ("url" in request.form and request.form['url']):
-                mobSfUrl = request.form['url']
-                os.environ['MOBSF_API_URL'] = mobSfUrl
-            return {"success":True}
-            
+    @app.route('/config',methods=['GET','POST'])
+    def configure():
+        if request.method == 'GET':
+            res = configRepository.get()
+            res['MOBSF_API_KEY'] = None
+            return res
+        elif request.method == 'POST':
+            try:
+                payload = {
+                            "SHOULD_DECOMPILE": request.form['SHOULD_DECOMPILE'],
+                        "SHOULD_USE_MOBSF":request.form['SHOULD_USE_MOBSF'],
+                        "MOBSF_URL":request.form['MOBSF_URL'],
+                            "MOBSF_API_KEY": request.form['MOBSF_API_KEY'] if 'MOBSF_API_KEY' in request.form else None
+                        }
+            except KeyError as e:
+                abort(400,description="Invalid config")
+            return {"success":configRepository.update(payload)}
     @app.route('/scan',methods=['POST'])
     def scan_apk():
         if request.method == 'POST':
@@ -48,13 +54,15 @@ def create_app(test_config=None):
             file = request.files['file']
             if file.filename == "" or not fileUtils.is_file_allowed(file.filename):
                 abort(400,description="invalid file format")
-            res = mobsf.upload(file.filename,file.stream)   
-            mobsf.scan(res['hash'],res['scan_type'],res['file_name'])
-            mobSfReport = mobsf.getPDFReport(res['hash'])
-
-            yaraResult = scanner.scan(file.filename,file.stream,True)
-            yaraReport = reporterService.report(yaraResult)
-            finalReport = reporterService.appendBytesToPDF(mobSfReport,yaraReport)
+            cfg = configRepository.get()
+            yaraResult = scanner.scan(file.filename,file.stream,cfg['SHOULD_DECOMPILE'] == 'true')
+            finalReport = reporterService.report(yaraResult)
+            if cfg['SHOULD_USE_MOBSF'] == 'true':
+                mobsf = mobsfAdapter.MobSFAdapter(configRepository)
+                res = mobsf.upload(file.filename,file.stream)   
+                mobsf.scan(res['hash'],res['scan_type'],res['file_name'])
+                mobSfReport = mobsf.getPDFReport(res['hash'])
+                finalReport = reporterService.appendBytesToPDF(mobSfReport,finalReport)
             return send_file(path_or_file=finalReport,mimetype="application/pdf")
             
     @app.route('/yara',methods=["POST"])

@@ -2,8 +2,6 @@ import Head from "next/head";
 import Image from "next/image";
 import { Inter } from "@next/font/google";
 import styles from "@/styles/Home.module.css";
-import { ChangeEvent, useEffect, useState } from "react";
-import { Navbar } from "@/components/layout/navbar";
 import { useUploadForm } from "@/hooks/useFormUpload";
 import { Button } from "@/components/button";
 import { UploadButton } from "@/components/uploadButton";
@@ -25,12 +23,14 @@ export default function Home() {
       a.click();
     }
   };
-  const { onSubmit, error, progress, handleFileChange, file } = useUploadForm(
-    "/scan",
-    handleResponse,
-    { responseType: "blob" }
-  );
-
+  const { onSubmit, error, progress, handleFileChange, file, isLoading } =
+    useUploadForm("/scan", handleResponse, { responseType: "blob" });
+  const handleSubmit = () => {
+    const formData = new FormData();
+    formData.append("shouldDecompile", "TRUE");
+    formData.append("shouldUseMobSf", "TRUE");
+    onSubmit(formData);
+  };
   return (
     <main
       className={
@@ -46,7 +46,12 @@ export default function Home() {
             height={300}
             alt={""}
           ></Image>
-          <ProgressBar className="mt-5" progress={progress}></ProgressBar>
+          <ProgressBar className="mt-5 mb-3" progress={progress}></ProgressBar>
+          {isLoading && (
+            <div className="text-black mb-3">
+              {progress < 100 ? "Uploading. . ." : "Scanning Files. . ."}
+            </div>
+          )}
         </div>
         <div>
           <div className="flex flex-row space-x-5 mb-3">
@@ -58,13 +63,14 @@ export default function Home() {
             </Button>
           </div>
           <div className="w-full">
-            <Button onClick={() => onSubmit()} disabled={!file}>
+            <Button onClick={handleSubmit} disabled={!file}>
               SCAN
             </Button>
           </div>
         </div>
         <div className="text-black">
-          **Make sure to configure MobSF API url and API key in setting page
+          *Please configure MobSF API in the setting page if you wish to perform
+          static analysis
         </div>
         {error && <div className="text-red-500">{error}</div>}
       </div>

@@ -18,16 +18,15 @@ export const useUploadForm = (
 ) => {
   const [error, setError] = useState("");
   const [progress, setProgress] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
   const [file, setFile] = useState<File>();
-  const onSubmit = async (payload = {} as FileProperty) => {
-    const formData = new FormData();
-    formData.append("name", payload.name ?? "");
-    formData.append("description", payload.description ?? "");
-    formData.append("file", file ?? "");
+  const onSubmit = async (additionalData = new FormData()) => {
+    setIsLoading(true);
+    additionalData.append("file", file ?? "");
     setProgress(0);
     setError("");
     const result = await client
-      .post(route, formData, {
+      .post(route, additionalData, {
         ...axiosConfig,
         headers: {
           "Content-Type": "multipart/form-data",
@@ -40,13 +39,14 @@ export const useUploadForm = (
         },
       })
       .then((res) => {
-        console.log(res);
         if (onSuccessCallback) onSuccessCallback(res);
+        setIsLoading(false);
         return res.data;
       })
       .catch(async (err: AxiosError<any, any>) => {
+        setIsLoading(false);
         setProgress(0);
-        console.log(err.response);
+        setFile(undefined);
         if (
           err.response?.data instanceof Blob &&
           err.response?.data?.type === "application/json"
@@ -68,5 +68,13 @@ export const useUploadForm = (
     setFile(undefined);
   };
 
-  return { error, progress, file, onSubmit, handleFileChange, removeFile };
+  return {
+    error,
+    progress,
+    file,
+    onSubmit,
+    handleFileChange,
+    removeFile,
+    isLoading,
+  };
 };

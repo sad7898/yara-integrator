@@ -5,6 +5,7 @@ import subprocess
 from typing import IO
 import uuid
 import shutil
+import zipfile
 import tempfile
 
 from .file import get_file_extension
@@ -27,7 +28,7 @@ def saveApkToTemp(path:str,stream:IO):
 
 def decompileApk(filename:str,apk: IO) -> IO:
     if (get_file_extension(filename) != "apk"):
-        return None,None
+        return None
     output = io.BytesIO()
     with tempfile.TemporaryDirectory() as tmpdirname:
         apkPath = saveApkToTemp(os.path.join(tmpdirname,filename),apk)
@@ -43,7 +44,9 @@ def decompileApk(filename:str,apk: IO) -> IO:
             output.seek(0)
             return output
         except Exception as e:
-            print(e)
             return None
+
+    
+    
   
 

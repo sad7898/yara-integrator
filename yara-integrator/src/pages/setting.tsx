@@ -3,13 +3,22 @@ import { Button } from "@/components/button";
 import styles from "@/styles/Home.module.css";
 import { client } from "@/utils/axiosInstance";
 import { useRouter } from "next/router";
-import { ChangeEvent, useState } from "react";
+import { ChangeEvent, useEffect, useState } from "react";
 
 const Setting = () => {
   const router = useRouter();
   const [mobSfUrl, setMobSfUrl] = useState("");
   const [apiKey, setApiKey] = useState("");
+  const [shouldDecompile, setShouldDecompile] = useState<Boolean>();
+  const [shouldUseMobSf, setShouldUseMobSf] = useState<Boolean>();
   const [error, setError] = useState("");
+  useEffect(() => {
+    client.get("/config").then(({ data }) => {
+      setMobSfUrl(data.MOBSF_URL ?? "");
+      setShouldDecompile(data.SHOULD_DECOMPILE === "true");
+      setShouldUseMobSf(data.SHOULD_USE_MOBSF === "true");
+    });
+  }, []);
   const handleMobSfUrlChange = (event: ChangeEvent<HTMLInputElement>) => {
     if (!isValidUrl(event.target.value)) setError("URL is not valid");
     else setError("");
@@ -20,6 +29,7 @@ const Setting = () => {
     setApiKey(event.target.value);
   };
   const isValidUrl = (url: string) => {
+    if (url.length === 0) return true;
     try {
       new URL(url);
       return true;
@@ -29,10 +39,12 @@ const Setting = () => {
   };
   const handleSubmit = () => {
     const formData = new FormData();
-    formData.append("url", mobSfUrl);
-    formData.append("apiKey", apiKey);
+    formData.append("MOBSF_URL", mobSfUrl);
+    formData.append("MOBSF_API_KEY", apiKey);
+    formData.append("SHOULD_DECOMPILE", shouldDecompile ? "true" : "false");
+    formData.append("SHOULD_USE_MOBSF", shouldUseMobSf ? "true" : "false");
     client
-      .post("/mobsf-api/config", formData)
+      .post("/config", formData)
       .then((res) => {
         router.push("/");
       })
@@ -47,27 +59,56 @@ const Setting = () => {
       }
     >
       <Block className="flex flex-col text-black gap-y-5">
-        <h1 className="font-bold text-3xl">MobSF API Config</h1>
-        <div className="flex flex-col gap-y-3 mt-2 mb-8">
-          <label>URL</label>
-          <input
-            type="text"
-            className="border p-2"
-            placeholder="http://localhost:3000"
-            value={mobSfUrl}
-            onChange={handleMobSfUrlChange}
-          ></input>
-          <label>API KEY</label>
-          <input
-            type="password"
-            className="border p-2"
-            required
-            value={apiKey}
-            onChange={handleApiKeyChange}
-          />
+        <div>
+          <h1 className="font-bold text-3xl">Scan Config</h1>
+          <div className="flex flex-col gap-y-3 mt-2 mb-3">
+            <label>
+              <input
+                className="mr-2"
+                type="checkbox"
+                checked={!!shouldDecompile}
+                onChange={() => setShouldDecompile((prev) => !prev)}
+              />
+              Decompile APK during scan
+            </label>
+            <label>
+              <input
+                className="mr-2"
+                type="checkbox"
+                checked={!!shouldUseMobSf}
+                onChange={() => setShouldUseMobSf((prev) => !prev)}
+              />
+              Enable Static Analysis with MobSF
+            </label>
+          </div>
         </div>
         <div>
-          <Button className="max-w-[172px]" onClick={handleSubmit}>
+          <h1 className="font-bold text-3xl">MobSF API Config</h1>
+          <div className="flex flex-col gap-y-3 mt-2 mb-8">
+            <label>URL</label>
+            <input
+              type="text"
+              className="border p-2"
+              placeholder="http://localhost:3000"
+              value={mobSfUrl}
+              onChange={handleMobSfUrlChange}
+            ></input>
+            <label>API KEY</label>
+            <input
+              type="password"
+              className="border p-2"
+              required
+              value={apiKey}
+              onChange={handleApiKeyChange}
+            />
+          </div>
+        </div>
+        <div>
+          <Button
+            className="max-w-[172px]"
+            onClick={handleSubmit}
+            disabled={!!error}
+          >
             Save
           </Button>
         </div>
