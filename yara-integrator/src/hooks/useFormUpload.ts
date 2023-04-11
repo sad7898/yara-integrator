@@ -46,7 +46,6 @@ export const useUploadForm = (
       .catch(async (err: AxiosError<any, any>) => {
         setIsLoading(false);
         setProgress(0);
-        setFile(undefined);
         if (
           err.response?.data instanceof Blob &&
           err.response?.data?.type === "application/json"

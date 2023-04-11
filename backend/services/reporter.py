@@ -45,7 +45,7 @@ class Reporter:
         pdfBytes = io.BytesIO()
         pdf = SimpleDocTemplate(pdfBytes, pagesize=letter,rightMargin = 20, leftMargin = 20, topMargin = 20, bottomMargin = 28)
 
-        titleStyle = ParagraphStyle(name="heading",fontSize=20,alignment=TA_LEFT)
+        titleStyle = ParagraphStyle(name="heading",fontSize=18,alignment=TA_LEFT)
         title = Paragraph("YARA rules", titleStyle)
         pdf.build([title,Spacer(1, 0.25*inch)] + contents)
         pdfBytes.seek(0)

@@ -27,8 +27,6 @@ export default function Home() {
     useUploadForm("/scan", handleResponse, { responseType: "blob" });
   const handleSubmit = () => {
     const formData = new FormData();
-    formData.append("shouldDecompile", "TRUE");
-    formData.append("shouldUseMobSf", "TRUE");
     onSubmit(formData);
   };
   return (
