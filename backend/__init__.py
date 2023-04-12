@@ -38,8 +38,8 @@ def create_app(test_config=None):
         elif request.method == 'POST':
             try:
                 payload = {
-                            "SHOULD_DECOMPILE": request.form['SHOULD_DECOMPILE'],
-                        "SHOULD_USE_MOBSF":request.form['SHOULD_USE_MOBSF'],
+                            "SHOULD_DECOMPILE": request.form['SHOULD_DECOMPILE'] == 'true',
+                        "SHOULD_USE_MOBSF":request.form['SHOULD_USE_MOBSF'] == 'true',
                         "MOBSF_URL":request.form['MOBSF_URL'],
                             "MOBSF_API_KEY": request.form['MOBSF_API_KEY'] if 'MOBSF_API_KEY' in request.form else None
                         }
@@ -55,9 +55,10 @@ def create_app(test_config=None):
             if file.filename == "" or not fileUtils.is_file_allowed(file.filename):
                 abort(400,description="invalid file format")
             cfg = configRepository.get()
-            yaraResult = scanner.scan(file.filename,file.stream,cfg['SHOULD_DECOMPILE'] == 'true')
+            print(cfg)
+            yaraResult = scanner.scan(file.filename,file.stream,cfg['SHOULD_DECOMPILE'])
             finalReport = reporterService.report(yaraResult)
-            if cfg['SHOULD_USE_MOBSF'] == 'true':
+            if cfg['SHOULD_USE_MOBSF']:
                 mobsf = mobsfAdapter.MobSFAdapter(configRepository)
                 res = mobsf.upload(file.filename,file.stream)   
                 mobsf.scan(res['hash'],res['scan_type'],res['file_name'])

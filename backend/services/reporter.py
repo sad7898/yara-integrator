@@ -1,7 +1,7 @@
 import io
 import json
 from typing import IO
-from reportlab.lib.pagesizes import letter
+from reportlab.lib.pagesizes import A4,landscape
 from reportlab.lib import colors
 from reportlab.lib.units import inch
 from reportlab.lib.enums import TA_LEFT
@@ -43,9 +43,8 @@ class Reporter:
     
     def buildPdf(self,contents) -> IO:
         pdfBytes = io.BytesIO()
-        pdf = SimpleDocTemplate(pdfBytes, pagesize=letter,rightMargin = 20, leftMargin = 20, topMargin = 20, bottomMargin = 28)
-
-        titleStyle = ParagraphStyle(name="heading",fontSize=18,alignment=TA_LEFT)
+        pdf = SimpleDocTemplate(pdfBytes, pagesize=landscape(A4),rightMargin = 20, leftMargin = 20, topMargin = 20, bottomMargin = 28,)
+        titleStyle = ParagraphStyle(name="heading",fontSize=20,alignment=TA_LEFT)
         title = Paragraph("YARA rules", titleStyle)
         pdf.build([title,Spacer(1, 0.25*inch)] + contents)
         pdfBytes.seek(0)
@@ -62,11 +61,11 @@ class Reporter:
     
     
     def report(self,yaraResults: dict):
-        headers = ["Namespace","Rules Matched","Locations","Description"]
+        headers = ["Namespace","Rules","Locations","Desc"]
         rows = []
         for namespace in yaraResults:
-            wrappedDesc = "\n".join(wrap(yaraResults[namespace]['description'],0.75 * inch))
-            rows.append([namespace,",".join(yaraResults[namespace]['rules']),",".join(yaraResults[namespace]['locations']),wrappedDesc])
+            wrappedDesc = "\n".join(wrap(yaraResults[namespace]['description'],0.5 * inch))
+            rows.append([namespace,",".join(yaraResults[namespace]['rules']),"\n".join(yaraResults[namespace]['locations']),wrappedDesc])
         table = self.listToTable(rows,headers)
         pdf = self.buildPdf([table])
         return pdf

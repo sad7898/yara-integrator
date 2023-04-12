@@ -6,7 +6,7 @@ import zipfile
 import yara
 import tempfile
 from .reporter import Reporter
-from ..utils import dex2jar,file as fileUtils
+from ..utils import dex2jar,file as fileUtils,apktool
 from ..repository import rule
 
 from flask import abort
@@ -43,15 +43,12 @@ class Scanner:
    
     def _extractApk(self,apkPath:str,ignoreDex=False):
         print(f"Extracting APK from {apkPath}")
-        dataPath = os.path.join(os.path.dirname(apkPath),'apk-data')
-        with zipfile.ZipFile(apkPath) as apk:
-            for member in apk.infolist():
-                if ignoreDex and member.filename.endswith('dex'):
-                    continue 
-                apk.extract(member, dataPath)
-
-            for root, dirs, files in os.walk(dataPath):
-                for filename in files:
+        extractedApkDir = apktool.extractApk(apkPath)
+        if (extractedApkDir is None):
+            abort(400,description="unsupported file type")
+        for root, dirs, files in os.walk(extractedApkDir):
+            for filename in files:
+                if ((not ignoreDex) or (not (filename.endswith("smali") or filename.endswith('dex')))):
                     filePath = os.path.join(root, filename)
                     with open(filePath, 'r',encoding='iso-8859-1') as file:
                         yield file,filename
@@ -78,6 +75,7 @@ class Scanner:
                 rawMatches = self._matchYaraRules(file,compiledRules)
                 matches = [Match(match.namespace,match.rule,[rule for rule in rules if rule['name']==match.namespace][0]['description'],name) for match in rawMatches]
                 result.addMatches(matches)
+
             if shouldDecompile:
                 jarPath = dex2jar.decompileApk(apkPath)
                 if (jarPath is not None):
@@ -85,6 +83,7 @@ class Scanner:
                         rawMatches = self._matchYaraRules(file,compiledRules)
                         matches = [Match(match.namespace,match.rule,[rule for rule in rules if rule['name']==match.namespace][0]['description'],name) for match in rawMatches]
                         result.addMatches(matches)
+
             scans = result.get()
             for namespace in scans:
                 scans[namespace]['rules'] = list(set(scans[namespace]['rules']))

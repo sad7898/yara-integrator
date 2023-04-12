@@ -15,8 +15,8 @@ const Setting = () => {
   useEffect(() => {
     client.get("/config").then(({ data }) => {
       setMobSfUrl(data.MOBSF_URL ?? "");
-      setShouldDecompile(data.SHOULD_DECOMPILE === "true");
-      setShouldUseMobSf(data.SHOULD_USE_MOBSF === "true");
+      setShouldDecompile(!!data.SHOULD_DECOMPILE);
+      setShouldUseMobSf(!!data.SHOULD_USE_MOBSF);
     });
   }, []);
   const handleMobSfUrlChange = (event: ChangeEvent<HTMLInputElement>) => {
