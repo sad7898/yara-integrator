@@ -62,11 +62,11 @@ class Reporter:
     
     
     def report(self,yaraResults: dict):
-        headers = ["Namespace","Rules Matched","Description"]
+        headers = ["Namespace","Rules Matched","Locations","Description"]
         rows = []
         for namespace in yaraResults:
             wrappedDesc = "\n".join(wrap(yaraResults[namespace]['description'],0.75 * inch))
-            rows.append([namespace,",".join(yaraResults[namespace]['rules']),wrappedDesc])
+            rows.append([namespace,",".join(yaraResults[namespace]['rules']),",".join(yaraResults[namespace]['locations']),wrappedDesc])
         table = self.listToTable(rows,headers)
         pdf = self.buildPdf([table])
         return pdf

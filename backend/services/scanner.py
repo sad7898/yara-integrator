@@ -10,26 +10,26 @@ from ..utils import dex2jar,file as fileUtils
 from ..repository import rule
 
 from flask import abort
+class Match():
+    def __init__(self,namespace: str,rule: str,description: str,location: str):
+        self.namespace = namespace
+        self.description = description
+        self.rule = rule
+        self.location = location
 class ScanResult():
-    def __init__(self,rules: list):
+    def __init__(self):
         self.dict = {}
-        self.rules = rules
-    def addMatches(self,matches):
+    def addMatches(self,matches: "list[Match]"):
         for match in matches:
             if match.namespace in self.dict:
                 self.dict[match.namespace]['rules'].append(match.rule)
+                self.dict[match.namespace]['locations'].append(match.location)
             else:
                 self.dict[match.namespace] = {
                         "rules": [match.rule],
-                        "description": [rule for rule in self.rules if rule['name']==match.namespace][0]['description']
+                        "description": match.description,
+                        "locations": [match.location]
             }
-    def merge(self,result):
-        for namespace in result:
-            if namespace in self.dict:
-                self.dict[namespace]['rules'] = list(set(self.dict[namespace]['rules'] + result[namespace]['rules']))
-            else:
-                self.dict[namespace]['rules'] = [rule for rule in result[namespace]['rules']]
-                self.dict[namespace]['description'] = [result[namespace]['description']]
     def get(self):
         return self.dict
         
@@ -52,9 +52,9 @@ class Scanner:
 
             for root, dirs, files in os.walk(dataPath):
                 for filename in files:
-                    file_path = os.path.join(root, filename)
-                    with open(file_path, 'r',encoding='iso-8859-1') as file:
-                        yield file
+                    filePath = os.path.join(root, filename)
+                    with open(filePath, 'r',encoding='iso-8859-1') as file:
+                        yield file,filename
   
     def _extractJar(self,jarPath):
         print(f"Extracting JAR from {jarPath}")
@@ -63,31 +63,33 @@ class Scanner:
             jar.extractall(jarDataPath)
             for root, dirs, files in os.walk(jarDataPath):
                 for filename in files:
-                    file_path = os.path.join(root, filename)
-                    with open(file_path, 'r',encoding='iso-8859-1') as file:
-                        yield file
+                    filePath = os.path.join(root, filename)
+                    with open(filePath, 'r',encoding='iso-8859-1') as file:
+                        yield file,filename
         
     def scan(self,filename:str,stream:IO,shouldDecompile: bool):
         stream.seek(0)
         rules = self.ruleRepository.list()
         compiledRules = yara.compile(filepaths={rule['name']:self.ruleRepository.getFullPath(rule['id']) for rule in rules})
         with tempfile.TemporaryDirectory() as tempdir:
-            result = ScanResult(rules)
+            result = ScanResult()
             apkPath = dex2jar.saveApkToTemp(os.path.join(tempdir,filename),stream)
-            for file in self._extractApk(apkPath,shouldDecompile):
-                matches = self._matchYaraRules(file,compiledRules)
+            for file,name in self._extractApk(apkPath,shouldDecompile):
+                rawMatches = self._matchYaraRules(file,compiledRules)
+                matches = [Match(match.namespace,match.rule,[rule for rule in rules if rule['name']==match.namespace][0]['description'],name) for match in rawMatches]
                 result.addMatches(matches)
             if shouldDecompile:
-                print("WILL DECOMPILE")
                 jarPath = dex2jar.decompileApk(apkPath)
                 if (jarPath is not None):
-                    for file in self._extractJar(jarPath):
-                        matches = self._matchYaraRules(file,compiledRules)
+                    for file,name in self._extractJar(jarPath):
+                        rawMatches = self._matchYaraRules(file,compiledRules)
+                        matches = [Match(match.namespace,match.rule,[rule for rule in rules if rule['name']==match.namespace][0]['description'],name) for match in rawMatches]
                         result.addMatches(matches)
-            
-            for namespace in result.get():
-                result.get()[namespace]['rules'] = list(set(result.get()[namespace]['rules']))
-            return result.get()
+            scans = result.get()
+            for namespace in scans:
+                scans[namespace]['rules'] = list(set(scans[namespace]['rules']))
+                scans[namespace]['locations'] = list(set(scans[namespace]['locations']))
+            return scans
 
     def addRule(self,name: str,stream: IO,description: str) -> bool:
         if (self.ruleRepository.searchByName(name) is not None):
