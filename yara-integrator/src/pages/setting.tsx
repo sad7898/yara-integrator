@@ -69,7 +69,7 @@ const Setting = () => {
                 checked={!!shouldDecompile}
                 onChange={() => setShouldDecompile((prev) => !prev)}
               />
-              Decompile APK during scan
+              Decompile APK to JAR during scan
             </label>
             <label>
               <input
@@ -101,6 +101,11 @@ const Setting = () => {
               value={apiKey}
               onChange={handleApiKeyChange}
             />
+            <div className="text-slate-500">
+              {
+                "*MobSF API Key can be obtained from log of MobSF's host machine"
+              }
+            </div>
           </div>
         </div>
         <div>
