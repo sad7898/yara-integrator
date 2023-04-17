@@ -31,7 +31,7 @@ RUN echo "Cleaning up apt" && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Set environment variables
-ENV JAVA_HOME /usr/lib/jvm/java-8-openjdk-amd64/
+ENV JAVA_HOME /usr/lib/jvm/java-11-openjdk-amd64/
 ENV PATH $PATH:/usr/local/bin/apktool
 ENV PATH="/dex-tools-2.1:${PATH}"
 

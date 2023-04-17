@@ -18,10 +18,11 @@ def extractApk(path: str) -> str:
     filename = os.path.basename(path)
     if (get_file_extension(filename) not in ["apk","jar"]):
         return None
+    print("extracting apk with apktool")
     resultDir = os.path.join(dirname,"extracted-apk")
     cmd = getCmdStr()
     try:
-        popen = subprocess.Popen([cmd,"d",path,"-o",resultDir],shell=True,stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+        popen = subprocess.Popen(args=f"{cmd} d {path} -o {resultDir}",shell=True,stdin=subprocess.PIPE, stdout=subprocess.PIPE,stderr=subprocess.PIPE)
         while popen.poll() is None:
             line = popen.stdout.readline().decode()
             if line.startswith('I: Copying original files'):
