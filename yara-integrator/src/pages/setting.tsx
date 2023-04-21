@@ -106,6 +106,11 @@ const Setting = () => {
                 "*MobSF API Key can be obtained from log of MobSF's host machine"
               }
             </div>
+            <div className="text-slate-500">
+              {
+                '*If MobSF is hosted on local machine, use domain name as "host.docker.internal" instead of "localhost"'
+              }
+            </div>
           </div>
         </div>
         <div>
