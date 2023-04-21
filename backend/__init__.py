@@ -33,7 +33,8 @@ def create_app(test_config=None):
     def configure():
         if request.method == 'GET':
             res = configRepository.get()
-            res['MOBSF_API_KEY'] = None
+            if res['MOBSF_API_KEY']:
+                res['MOBSF_API_KEY'] = "***********"
             return res
         elif request.method == 'POST':
             try:
@@ -41,7 +42,7 @@ def create_app(test_config=None):
                             "SHOULD_DECOMPILE": request.form['SHOULD_DECOMPILE'] == 'true',
                         "SHOULD_USE_MOBSF":request.form['SHOULD_USE_MOBSF'] == 'true',
                         "MOBSF_URL":request.form['MOBSF_URL'],
-                            "MOBSF_API_KEY": request.form['MOBSF_API_KEY'] if 'MOBSF_API_KEY' in request.form else None
+                            "MOBSF_API_KEY": request.form['MOBSF_API_KEY'] if 'MOBSF_API_KEY' in request.form and request.form['MOBSF_API_KEY'] != "***********" else None
                         }
             except KeyError as e:
                 abort(400,description="Invalid config")

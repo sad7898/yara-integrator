@@ -4,8 +4,6 @@ services:
     build:
       context: "backend"
       dockerfile: Dockerfile
-    # flask requires SIGINT to stop gracefully
-    # (default stop signal from Compose is SIGTERM)
     stop_signal: SIGINT
     extra_hosts:
       - "host.docker.internal:host-gateway"
