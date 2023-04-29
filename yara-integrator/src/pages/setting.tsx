@@ -33,11 +33,24 @@ const Setting = () => {
     else setError("");
     setMobSfUrl(event.target.value);
   };
-
+  function findStringDifference(str1: string, str2: string): string {
+    let difference = "";
+    for (let i = 0; i < str1.length; i++) {
+      if (str1[i] !== str2[i]) {
+        difference += str2[i];
+      }
+    }
+    return difference;
+  }
   const handleApiKeyChange = (event: ChangeEvent<HTMLInputElement>) => {
-    console.log(event.nativeEvent);
+    console.log(event);
     if (apiKey.isFake) {
-      setApiKey({ value: event.nativeEvent.data, isFake: false });
+      setApiKey((prev) => {
+        return {
+          isFake: false,
+          value: findStringDifference(prev.value, event.target.value),
+        };
+      });
     } else setApiKey((prev) => ({ ...prev, value: event.target.value }));
   };
   const isValidUrl = (url: string) => {
