@@ -33,25 +33,9 @@ const Setting = () => {
     else setError("");
     setMobSfUrl(event.target.value);
   };
-  function findStringDifference(str1: string, str2: string): string {
-    let difference = "";
-    for (let i = 0; i < str1.length; i++) {
-      if (str1[i] !== str2[i]) {
-        difference += str2[i];
-      }
-    }
-    return difference;
-  }
+
   const handleApiKeyChange = (event: ChangeEvent<HTMLInputElement>) => {
-    console.log(event);
-    if (apiKey.isFake) {
-      setApiKey((prev) => {
-        return {
-          isFake: false,
-          value: findStringDifference(prev.value, event.target.value),
-        };
-      });
-    } else setApiKey((prev) => ({ ...prev, value: event.target.value }));
+    setApiKey((prev) => ({ ...prev, value: event.target.value }));
   };
   const isValidUrl = (url: string) => {
     if (url.length === 0) return true;
@@ -124,6 +108,11 @@ const Setting = () => {
               className="border p-2"
               required
               value={apiKey.value}
+              onBeforeInput={() => {
+                if (apiKey.isFake) {
+                  setApiKey({ isFake: false, value: "" });
+                }
+              }}
               onChange={handleApiKeyChange}
             />
             <div className="text-slate-500">
